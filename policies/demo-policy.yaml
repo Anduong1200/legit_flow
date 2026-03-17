@@ -1,0 +1,42 @@
+# Legit Flow — Demo Policy
+# Relaxed policy for demo purposes: pseudonymize instead of block
+# to show data transformation in action.
+
+version: "1.0.0-demo"
+name: "demo-showcase"
+description: "Demo policy — pseudonymize restricted, mask confidential (shows transforms clearly)"
+
+defaults:
+  restricted: pseudonymize   # Show pseudonymization in action (instead of hard block)
+  confidential: mask         # Show masking in action
+  internal: allow
+  public: allow
+
+rules:
+  - name: pseudonymize-citizen-id
+    description: "Pseudonymize CCCD for demo visibility"
+    detection_types: [CCCD]
+    tier: restricted
+    action: pseudonymize
+    enabled: true
+
+  - name: redact-secrets
+    description: "Redact secrets (hard block even in demo)"
+    detection_types: [JWT, API_KEY]
+    tier: restricted
+    action: redact
+    enabled: true
+
+  - name: mask-phone-demo
+    description: "Mask phone numbers"
+    detection_types: [PHONE_VN]
+    tier: confidential
+    action: mask
+    enabled: true
+
+  - name: mask-email-demo
+    description: "Mask emails"
+    detection_types: [EMAIL]
+    tier: confidential
+    action: mask
+    enabled: true

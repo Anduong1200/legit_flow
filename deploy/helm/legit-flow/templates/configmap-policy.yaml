@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: { { .Values.policy.configMapName } }
+    labels: { { - include "legit-flow.labels" . | nindent 4 } }
+data:
+    default-policy.yaml: |
+        version: "1.0.0"
+        name: "default-hardened"
+        description: "Default policy — block restricted, mask confidential"
+        defaults:
+          restricted: block
+          confidential: mask
+          internal: allow
+          public: allow
+        rules:
+          - name: block-citizen-id
+            detection_types: [CCCD]
+            tier: restricted
+            action: block
+            enabled: true
+          - name: block-secrets
+            detection_types: [JWT, API_KEY]
+            tier: restricted
+            action: block
+            enabled: true
+          - name: mask-phone
+            detection_types: [PHONE_VN]
+            tier: confidential
+            action: mask
+            enabled: true
+          - name: mask-email
+            detection_types: [EMAIL]
+            tier: confidential
+            action: mask
+            enabled: true

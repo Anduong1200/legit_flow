@@ -1,0 +1,40 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+/bin/
+/dist/
+
+# Go
+vendor/
+go.sum
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Containers
+*.tar
+*.gz
+
+# Secrets — never commit
+*.pem
+*.key
+*.env
+.env.*
+secrets/
+
+# Test output
+coverage.out
+coverage.html
+*.test
+
+# Helm
+deploy/helm/legit-flow/charts/

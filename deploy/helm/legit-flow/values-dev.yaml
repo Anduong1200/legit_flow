@@ -1,0 +1,27 @@
+# Legit Flow — Dev Override Values (kind/k3s local cluster)
+# Use: helm install legit-flow ./deploy/helm/legit-flow -f ./deploy/helm/legit-flow/values-dev.yaml
+
+gateway:
+  replicaCount: 1
+  image:
+    pullPolicy: Never # use local images loaded into kind
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  env:
+    LEGIT_LLM_BACKEND_URL: "http://llm-mock:11434"
+    LEGIT_CLASSIFIER_PROVIDER: "disabled"
+
+audit:
+  persistence:
+    enabled: false # use emptyDir for dev
+
+networkPolicy:
+  enabled: false # relax for dev
+
+tls:
+  enabled: false

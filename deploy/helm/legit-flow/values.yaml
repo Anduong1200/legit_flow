@@ -1,0 +1,72 @@
+# Legit Flow — Helm Chart Values
+# Default values for on-prem Kubernetes deployment.
+
+# ── Gateway ──────────────────────────────────────────────
+gateway:
+  replicaCount: 2
+  image:
+    repository: legitflow/gateway
+    tag: "0.1.0-demo"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+    metricsPort: 9090
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  env:
+    LEGIT_LLM_BACKEND_URL: "http://llm-mock:11434"
+    LEGIT_POLICY_DIR: "/etc/legit-flow/policies"
+    LEGIT_AUDIT_DIR: "/var/log/legit-flow/audit"
+    LEGIT_CLASSIFIER_PROVIDER: "disabled"
+    LEGIT_HOLDBACK_WINDOW: "5"
+  # Pluggable L2 classifier — uncomment and set for API-based classification
+  # LEGIT_CLASSIFIER_PROVIDER: "openai"
+  # LEGIT_CLASSIFIER_API_URL: "https://api.openai.com/v1/chat/completions"
+  # LEGIT_CLASSIFIER_MODEL: "gpt-4o-mini"
+  # Secret ref for API key:
+  classifierSecret:
+    enabled: false
+    secretName: "legit-flow-classifier"
+    key: "api-key"
+
+# ── Audit ────────────────────────────────────────────────
+audit:
+  tier1:
+    enabled: true
+  tier2:
+    enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "" # use default SC
+
+# ── Security Context (hardened-by-default) ───────────────
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534 # nobody
+  runAsGroup: 65534
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: RuntimeDefault
+
+# ── Network Policy ───────────────────────────────────────
+networkPolicy:
+  enabled: true
+
+# ── TLS / mTLS ───────────────────────────────────────────
+tls:
+  enabled: false
+  certSecret: ""
+
+# ── Policy ConfigMap ─────────────────────────────────────
+policy:
+  configMapName: "legit-flow-policy"
