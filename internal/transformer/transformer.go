@@ -13,12 +13,12 @@ import (
 type Action string
 
 const (
-	ActionAllow      Action = "allow"       // passthrough
-	ActionMask       Action = "mask"        // partial masking: 079***1234
-	ActionPseudonym  Action = "pseudonymize" // consistent fake replacement
-	ActionTokenize   Action = "tokenize"    // reversible token
-	ActionBlock      Action = "block"       // replace with [BLOCKED]
-	ActionRedact     Action = "redact"      // replace with [REDACTED]
+	ActionAllow     Action = "allow"        // passthrough
+	ActionMask      Action = "mask"         // partial masking: 079***1234
+	ActionPseudonym Action = "pseudonymize" // consistent fake replacement
+	ActionTokenize  Action = "tokenize"     // reversible token
+	ActionBlock     Action = "block"        // replace with [BLOCKED]
+	ActionRedact    Action = "redact"       // replace with [REDACTED]
 )
 
 // Transformer applies an action to detected entities in text.

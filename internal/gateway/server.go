@@ -155,7 +155,7 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Request-ID", requestID)
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"request blocked by policy","request_id":%q}`, requestID)
+		_, _ = fmt.Fprintf(w, `{"error":"request blocked by policy","request_id":%q}`, requestID)
 		return
 	}
 
@@ -226,7 +226,7 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 
 			if result.Violation {
 				// Stream truncated — send safe message and stop
-				fmt.Fprintf(w, "data: %s\n\n", result.Message)
+				_, _ = fmt.Fprintf(w, "data: %s\n\n", result.Message)
 				flusher.Flush()
 				s.logger.Warn("stream truncated by output guard",
 					"request_id", requestID)
@@ -234,7 +234,7 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 			}
 
 			if result.SafeText != "" {
-				fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
+				_, _ = fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
 				flusher.Flush()
 			}
 		}
@@ -250,11 +250,11 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 		return
 	}
 	if result.SafeText != "" {
-		fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
+		_, _ = fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
 		flusher.Flush()
 	}
 	if result.Violation {
-		fmt.Fprintf(w, "data: %s\n\n", result.Message)
+		_, _ = fmt.Fprintf(w, "data: %s\n\n", result.Message)
 		flusher.Flush()
 	}
 }

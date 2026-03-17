@@ -38,7 +38,7 @@ type chatReq struct {
 // to test the output guard.
 func handleChat(w http.ResponseWriter, r *http.Request) {
 	var req chatReq
-	json.NewDecoder(r.Body).Decode(&req)
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	prompt := req.Prompt
 	if prompt == "" && len(req.Messages) > 0 {
@@ -49,7 +49,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	response := generateResponse(prompt)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"choices": []map[string]interface{}{
 			{
 				"message": map[string]string{
@@ -69,7 +69,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 // handleStream simulates SSE streaming responses.
 func handleStream(w http.ResponseWriter, r *http.Request) {
 	var req chatReq
-	json.NewDecoder(r.Body).Decode(&req)
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	prompt := req.Prompt
 	if prompt == "" && len(req.Messages) > 0 {
@@ -94,11 +94,11 @@ func handleStream(w http.ResponseWriter, r *http.Request) {
 		if i == 0 {
 			sep = ""
 		}
-		fmt.Fprintf(w, "data: %s%s\n\n", sep, word)
+		_, _ = fmt.Fprintf(w, "data: %s%s\n\n", sep, word)
 		flusher.Flush()
 		time.Sleep(50 * time.Millisecond)
 	}
-	fmt.Fprintf(w, "data: [DONE]\n\n")
+	_, _ = fmt.Fprintf(w, "data: [DONE]\n\n")
 	flusher.Flush()
 }
 

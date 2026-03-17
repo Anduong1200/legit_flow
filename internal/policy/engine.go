@@ -15,21 +15,21 @@ import (
 
 // Policy defines the complete policy configuration.
 type Policy struct {
-	Version     string            `yaml:"version"`
-	Name        string            `yaml:"name"`
-	Description string            `yaml:"description"`
-	Rules       []Rule            `yaml:"rules"`
-	Defaults    DefaultActions    `yaml:"defaults"`
+	Version     string         `yaml:"version"`
+	Name        string         `yaml:"name"`
+	Description string         `yaml:"description"`
+	Rules       []Rule         `yaml:"rules"`
+	Defaults    DefaultActions `yaml:"defaults"`
 }
 
 // Rule defines a detection-to-action mapping.
 type Rule struct {
-	Name        string                 `yaml:"name"`
-	Description string                 `yaml:"description"`
+	Name           string                   `yaml:"name"`
+	Description    string                   `yaml:"description"`
 	DetectionTypes []detector.DetectionType `yaml:"detection_types"` // which types this rule applies to
-	Tier        detector.RiskTier      `yaml:"tier"`
-	Action      transformer.Action     `yaml:"action"`
-	Enabled     bool                   `yaml:"enabled"`
+	Tier           detector.RiskTier        `yaml:"tier"`
+	Action         transformer.Action       `yaml:"action"`
+	Enabled        bool                     `yaml:"enabled"`
 }
 
 // DefaultActions defines the fallback actions per risk tier.

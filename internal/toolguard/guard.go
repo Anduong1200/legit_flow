@@ -13,20 +13,20 @@ import (
 type Permission string
 
 const (
-	PermRead     Permission = "read"
-	PermWrite    Permission = "write"
-	PermExecute  Permission = "execute"
-	PermAdmin    Permission = "admin"
+	PermRead    Permission = "read"
+	PermWrite   Permission = "write"
+	PermExecute Permission = "execute"
+	PermAdmin   Permission = "admin"
 )
 
 // ToolEndpoint defines an allowed tool with its constraints.
 type ToolEndpoint struct {
-	Name        string       `yaml:"name"`
-	Endpoint    string       `yaml:"endpoint"`
-	AllowedRoles []string    `yaml:"allowed_roles"`
-	Permission  Permission   `yaml:"permission"`
-	NeedsApproval bool      `yaml:"needs_approval"` // requires human approval
-	Description string       `yaml:"description"`
+	Name          string     `yaml:"name"`
+	Endpoint      string     `yaml:"endpoint"`
+	AllowedRoles  []string   `yaml:"allowed_roles"`
+	Permission    Permission `yaml:"permission"`
+	NeedsApproval bool       `yaml:"needs_approval"` // requires human approval
+	Description   string     `yaml:"description"`
 }
 
 // Guard enforces tool/action access control.

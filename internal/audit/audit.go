@@ -20,16 +20,16 @@ import (
 
 // Tier1Event contains metadata only — safe to always log.
 type Tier1Event struct {
-	EventID    string                   `json:"event_id"`
-	Timestamp  time.Time                `json:"timestamp"`
-	RequestID  string                   `json:"request_id"`
-	UserID     string                   `json:"user_id"`
-	SourceIP   string                   `json:"source_ip"`
-	Action     transformer.Action       `json:"action"`
-	PolicyName string                   `json:"policy_name"`
-	Detections []DetectionSummary       `json:"detections"` // type + tier only, no values
-	Outcome    string                   `json:"outcome"`    // "allowed", "blocked", "transformed", "truncated"
-	LatencyMs  int64                    `json:"latency_ms"`
+	EventID    string             `json:"event_id"`
+	Timestamp  time.Time          `json:"timestamp"`
+	RequestID  string             `json:"request_id"`
+	UserID     string             `json:"user_id"`
+	SourceIP   string             `json:"source_ip"`
+	Action     transformer.Action `json:"action"`
+	PolicyName string             `json:"policy_name"`
+	Detections []DetectionSummary `json:"detections"` // type + tier only, no values
+	Outcome    string             `json:"outcome"`    // "allowed", "blocked", "transformed", "truncated"
+	LatencyMs  int64              `json:"latency_ms"`
 }
 
 // DetectionSummary is a value-free summary of a detection for Tier 1 logging.
@@ -41,9 +41,9 @@ type DetectionSummary struct {
 
 // Tier2Event contains the redacted/pseudonymized content for authorized review.
 type Tier2Event struct {
-	EventID           string `json:"event_id"` // links to Tier1Event
-	RedactedInput     string `json:"redacted_input,omitempty"`
-	RedactedOutput    string `json:"redacted_output,omitempty"`
+	EventID           string                         `json:"event_id"` // links to Tier1Event
+	RedactedInput     string                         `json:"redacted_input,omitempty"`
+	RedactedOutput    string                         `json:"redacted_output,omitempty"`
 	TransformsSummary []transformer.AppliedTransform `json:"transforms,omitempty"`
 }
 

@@ -24,8 +24,8 @@ type Config struct {
 	ClassifierModel    string `yaml:"classifier_model"`   // e.g. "gpt-4o-mini", "claude-3-haiku", or local model name
 
 	// Policy
-	PolicyDir      string `yaml:"policy_dir"`
-	PolicyReload   bool   `yaml:"policy_hot_reload"`
+	PolicyDir    string `yaml:"policy_dir"`
+	PolicyReload bool   `yaml:"policy_hot_reload"`
 
 	// Audit
 	AuditTier1Enabled bool   `yaml:"audit_tier1_enabled"`

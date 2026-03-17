@@ -18,9 +18,9 @@ func (d *L1RegexDetector) Name() string { return "l1_regex" }
 
 // pattern defines a single regex pattern with its detection type and risk tier.
 type pattern struct {
-	name    DetectionType
-	tier    RiskTier
-	re      *regexp.Regexp
+	name DetectionType
+	tier RiskTier
+	re   *regexp.Regexp
 }
 
 // Vietnamese & universal patterns

@@ -37,7 +37,7 @@ func TestDemoMVPFlow(t *testing.T) {
 
 	// 2. Initialize Core MVP Components
 	t.Log("Initializing Legit Flow MVP Components...")
-	
+
 	// - Detector Registry
 	reg := detector.NewRegistry()
 	reg.Register(detector.NewL1RegexDetector())
@@ -104,7 +104,7 @@ func TestDemoMVPFlow(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Detection failed: %v", err)
 			}
-			
+
 			// ---------------------------------------------------------
 			// STEP B: Policy Evaluation
 			// The Engine matches detection types against active rules.
@@ -114,7 +114,7 @@ func TestDemoMVPFlow(t *testing.T) {
 			action := transformer.ActionAllow
 			if len(detectResults) > 0 {
 				action = transformer.ActionBlock // simplify for test output logging
-				_ = pol // explicitly marking used
+				_ = pol                          // explicitly marking used
 			}
 
 			// ---------------------------------------------------------
@@ -122,7 +122,7 @@ func TestDemoMVPFlow(t *testing.T) {
 			// Acts as a sliding window buffer intercepting LLM chunks.
 			// Triggers a violation if the policy determines the chunk is unsafe.
 			// ---------------------------------------------------------
-			guard := outputguard.NewStreamGuard(reg, 3) 
+			guard := outputguard.NewStreamGuard(reg, 3)
 			guardResult, err := guard.ProcessChunk(ctx, sc.inputChunk)
 			if err != nil {
 				t.Fatalf("Guard failed: %v", err)
@@ -140,7 +140,7 @@ func TestDemoMVPFlow(t *testing.T) {
 				Action:    action,
 				LatencyMs: 12, // Simulated inference latency overhead
 			})
-			
+
 			// StreamGuard specifically flags "Violation: true" if it detected something.
 			if guardResult.Violation != sc.wantBlocked {
 				t.Errorf("Unexpected Guard violation state: got %v, want %v", guardResult.Violation, sc.wantBlocked)

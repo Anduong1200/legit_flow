@@ -73,7 +73,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	proxyReq, _ := http.NewRequest("POST", gatewayURL+"/v1/chat/completions", bytes.NewReader(payloadBytes))
 	proxyReq.Header.Set("Content-Type", "application/json")
 	proxyReq.Header.Set("X-User-ID", "demo-user")
-	
+
 	// Pass API key if configured (needed when testing with real OpenAI behind Gateway)
 	if apiKey := os.Getenv("DEMO_API_KEY"); apiKey != "" {
 		proxyReq.Header.Set("Authorization", "Bearer "+apiKey)
@@ -82,7 +82,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(proxyReq)
 	if err != nil {
-		json.NewEncoder(w).Encode(chatResponse{Reply: "Gateway unavailable: " + err.Error()})
+		_ = json.NewEncoder(w).Encode(chatResponse{Reply: "Gateway unavailable: " + err.Error()})
 		return
 	}
 	defer resp.Body.Close()
@@ -92,7 +92,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if resp.StatusCode == http.StatusForbidden {
-		json.NewEncoder(w).Encode(chatResponse{
+		_ = json.NewEncoder(w).Encode(chatResponse{
 			Reply:     "⛔ Request blocked by Legit Flow policy",
 			RequestID: requestID,
 			Blocked:   true,
@@ -109,13 +109,13 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 			} `json:"message"`
 		} `json:"choices"`
 	}
-	
+
 	replyText := string(body)
 	if err := json.Unmarshal(body, &openaiResp); err == nil && len(openaiResp.Choices) > 0 {
 		replyText = openaiResp.Choices[0].Message.Content
 	}
 
-	json.NewEncoder(w).Encode(chatResponse{
+	_ = json.NewEncoder(w).Encode(chatResponse{
 		Reply:     replyText,
 		RequestID: requestID,
 	})

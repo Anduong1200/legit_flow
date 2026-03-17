@@ -36,10 +36,10 @@ func NewStreamGuard(reg *detector.Registry, windowSize int) *StreamGuard {
 
 // ChunkResult describes the outcome of processing a chunk.
 type ChunkResult struct {
-	SafeText   string // text safe to send to client
-	Truncated  bool   // whether the stream was truncated
-	Violation  bool   // whether a violation was detected
-	Message    string // safe message to send if truncated
+	SafeText  string // text safe to send to client
+	Truncated bool   // whether the stream was truncated
+	Violation bool   // whether a violation was detected
+	Message   string // safe message to send if truncated
 }
 
 // ProcessChunk adds a new chunk to the sliding window, scans the window,
