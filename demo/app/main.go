@@ -61,10 +61,23 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Forward to gateway → LLM backend
-	payload, _ := json.Marshal(map[string]string{"prompt": req.Message})
-	proxyReq, _ := http.NewRequest("POST", gatewayURL+"/v1/chat/completions", bytes.NewReader(payload))
+	// Use standard OpenAI Chat Completions payload format
+	model := envOr("DEMO_MODEL", "gpt-4o-mini") // Default to a fast/cheap model if using external API
+	payload := map[string]interface{}{
+		"model": model,
+		"messages": []map[string]string{
+			{"role": "user", "content": req.Message},
+		},
+	}
+	payloadBytes, _ := json.Marshal(payload)
+	proxyReq, _ := http.NewRequest("POST", gatewayURL+"/v1/chat/completions", bytes.NewReader(payloadBytes))
 	proxyReq.Header.Set("Content-Type", "application/json")
 	proxyReq.Header.Set("X-User-ID", "demo-user")
+	
+	// Pass API key if configured (needed when testing with real OpenAI behind Gateway)
+	if apiKey := os.Getenv("DEMO_API_KEY"); apiKey != "" {
+		proxyReq.Header.Set("Authorization", "Bearer "+apiKey)
+	}
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(proxyReq)
@@ -87,8 +100,23 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Try to parse standard OpenAI response format for a cleaner UI output if possible.
+	// If it fails or is from a simple mock, just return raw body.
+	var openaiResp struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+	
+	replyText := string(body)
+	if err := json.Unmarshal(body, &openaiResp); err == nil && len(openaiResp.Choices) > 0 {
+		replyText = openaiResp.Choices[0].Message.Content
+	}
+
 	json.NewEncoder(w).Encode(chatResponse{
-		Reply:     string(body),
+		Reply:     replyText,
 		RequestID: requestID,
 	})
 }

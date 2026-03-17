@@ -15,7 +15,20 @@ Legit Flow intercepts, inspects, and sanitizes all traffic between enterprise ap
 | **2-Tier Audit** | ✅ MVP | Tier 1 metadata (always-on) + Tier 2 redacted content |
 | **Break-Glass** | ✅ MVP | 2-person rule, ticket link, time-bound access |
 | **Tool/Action Guard** | ✅ MVP | Allowlist, RBAC, approval workflow, default deny |
-| **Hardened K8s** | ✅ MVP | Non-root, read-only FS, NetworkPolicy, seccomp |
+	| **Hardened K8s** | ✅ MVP | Non-root, read-only FS, NetworkPolicy, seccomp |
+
+## 🏰 Technical Architecture
+
+Legit Flow operates as a standard reverse proxy (API Gateway) intercepting HTTP requests between internal enterprise applications and external/internal LLM APIs (OpenAI, Anthropic, local vLLM). It is designed with modularity and low latency in mind.
+
+### Core Components:
+1. **Request Interceptor & Metrics Middleware:** Terminates the HTTP connection, extracts the prompt, and logs initial metrics.
+2. **Detector Registry:**
+   - **L1 Fast-path (Regex):** Deterministic scanning for clear formats (CCCD, Emails, Phone numbers, JWTs, API Keys). Runs in < 2ms.
+   - **L2 Contextual (LLM-based):** Semantic scanning for complex requests using a fast classifier model (e.g., `gpt-4o-mini` or local tiny LLM).
+3. **Policy-as-Code Engine:** Evaluates the detections against a YAML-defined policy array to determine the risk tier and the corresponding action (`allow`, `mask`, `block`).
+4. **Output Stream Guard:** For streaming responses (`stream: true`), this component acts as a sliding window buffer holding back tokens temporarily to perform real-time scanning. If a violation is found mid-stream, it truncates the stream and shuts the connection.
+5. **2-Tier Audit Logger:** Logs the metadata (Tier 1) for every request for observability and SIEM integration. Only authorized personnel can access the encrypted, pseudonymized payloads (Tier 2).
 
 ## 🚀 Quick Start
 
