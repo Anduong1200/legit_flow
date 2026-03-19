@@ -83,7 +83,7 @@ func TestDemoMVPFlow(t *testing.T) {
 		{
 			name:        "Phone Number (Confidential -> Masked)",
 			inputChunk:  "You can reach me at 0912345678 if needed.",
-			wantBlocked: true, // OutputGuard throws Violation for any detection
+			wantBlocked: false, // Confidential phone numbers should be transformed, not hard-blocked.
 			description: "Contains a phone number.",
 		},
 	}

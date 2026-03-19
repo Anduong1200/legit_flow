@@ -116,12 +116,23 @@ func generateResponse(prompt string) string {
 		"API key nội bộ: sk-testkey1234567890abcdefghijklmnop. Vui lòng bảo mật.",
 	}
 
+	if shouldForceSensitiveResponse(prompt) {
+		return piiResponses[1]
+	}
+
 	// 30% chance of PII injection for testing
 	if rand.Intn(10) < 3 {
 		return piiResponses[rand.Intn(len(piiResponses))]
 	}
 	_ = prompt
 	return responses[rand.Intn(len(responses))]
+}
+
+func shouldForceSensitiveResponse(prompt string) bool {
+	lower := strings.ToLower(prompt)
+	return strings.Contains(lower, "kiểm thử streaming output guard") ||
+		strings.Contains(lower, "kiem thu streaming output guard") ||
+		strings.Contains(lower, "simulate sensitive streaming leak")
 }
 
 func envOr(key, fallback string) string {

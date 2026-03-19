@@ -129,3 +129,47 @@ func TestL1NoFalsePositivesOnCleanText(t *testing.T) {
 		t.Errorf("Expected no detections on clean text, got %d: %+v", len(results), results)
 	}
 }
+
+func TestL1BankAccountDoesNotShadowSpecificVNIdentifiers(t *testing.T) {
+	d := NewL1RegexDetector()
+
+	tests := []struct {
+		name     string
+		input    string
+		wantType DetectionType
+	}{
+		{
+			name:     "phone remains phone only",
+			input:    "Liên hệ 0912345678 để xác nhận lịch hẹn",
+			wantType: TypePhoneVN,
+		},
+		{
+			name:     "cccd remains cccd only",
+			input:    "CCCD khách hàng là 001234567890",
+			wantType: TypeCCCD,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			results, err := d.Detect(context.Background(), tt.input)
+			if err != nil {
+				t.Fatalf("Detect() error: %v", err)
+			}
+
+			var specificCount int
+			for _, r := range results {
+				if r.Type == TypeBankAccount {
+					t.Fatalf("unexpected bank account detection for %q: %+v", tt.input, results)
+				}
+				if r.Type == tt.wantType {
+					specificCount++
+				}
+			}
+
+			if specificCount != 1 {
+				t.Fatalf("expected one %s detection, got %d: %+v", tt.wantType, specificCount, results)
+			}
+		})
+	}
+}
