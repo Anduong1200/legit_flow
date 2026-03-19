@@ -1,0 +1,1 @@
+{"event_id":"","redacted_input":"{\"messages\":[{\"content\":\"[BLOCKED]\",\"role\":\"user\"}],\"model\":\"gpt-4o-mini\"}","transforms":[{"type":"BANK_ACCOUNT","action":"block","replacement":"[BLOCKED]","start":25,"end":41}]}

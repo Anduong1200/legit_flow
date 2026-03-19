@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legit Flow Demo Console</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap');
+
+    :root {
+      --bg: #eef4ff;
+      --bg-soft: #f6f9ff;
+      --navy: #0e1c4a;
+      --navy-deep: #07102d;
+      --primary: #2358ff;
+      --primary-soft: rgba(35, 88, 255, 0.12);
+      --teal: #10b7a6;
+      --teal-soft: rgba(16, 183, 166, 0.12);
+      --gold: #ffb95e;
+      --gold-soft: rgba(255, 185, 94, 0.16);
+      --danger: #eb5757;
+      --danger-soft: rgba(235, 87, 87, 0.14);
+      --success: #169b6b;
+      --success-soft: rgba(22, 155, 107, 0.12);
+      --ink: #12204a;
+      --muted: #69779a;
+      --border: rgba(18, 32, 74, 0.08);
+      --card: rgba(255, 255, 255, 0.88);
+      --card-strong: rgba(255, 255, 255, 0.96);
+      --shadow-lg: 0 32px 80px rgba(17, 35, 86, 0.16);
+      --shadow-md: 0 18px 40px rgba(17, 35, 86, 0.12);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 18%, rgba(35, 88, 255, 0.18), transparent 22%),
+        radial-gradient(circle at 85% 15%, rgba(16, 183, 166, 0.18), transparent 18%),
+        radial-gradient(circle at 80% 88%, rgba(255, 185, 94, 0.18), transparent 18%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 48%, #edf3ff 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background-image:
+        linear-gradient(rgba(14, 28, 74, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 28, 74, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.8));
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px 24px 44px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(16px);
+    }
+
+    .appbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      border-radius: 26px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 58px;
+      height: 58px;
+      flex-shrink: 0;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-family: "Sora", "Manrope", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      background:
+        radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.26), transparent 38%),
+        linear-gradient(135deg, #2f61ff, #0f1b4a 82%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: #315dff;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-family: "Sora", "Manrope", sans-serif;
+      font-size: clamp(1.35rem, 2vw, 2rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 720px;
+      font-size: 0.94rem;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .top-chip,
+    .profile-chip {
+      border-radius: 18px;
+      padding: 12px 14px;
+      background: var(--card-strong);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+      min-width: 150px;
+    }
+
+    .top-chip span,
+    .profile-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .top-chip strong,
+    .profile-chip strong {
+      display: block;
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+
+    .top-chip.gateway {
+      min-width: 220px;
+    }
+
+    .top-chip.gateway strong {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .gateway-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(18, 32, 74, 0.08);
+    }
+
+    .gateway-pill.ok {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .gateway-pill.warn {
+      background: var(--gold-soft);
+      color: #b86b00;
+    }
+
+    .gateway-pill.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .profile-chip {
+      min-width: 180px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, #10b7a6, #2358ff);
+    }
+
+    .profile-chip div {
+      min-width: 0;
+    }
+
+    .hero-wrap {
+      position: relative;
+      margin-top: 22px;
+      padding-bottom: 54px;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      padding: 34px 34px 88px;
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(circle at 78% 24%, rgba(255, 255, 255, 0.16), transparent 22%),
+        linear-gradient(140deg, #17306f 0%, #102355 42%, #2358ff 100%);
+      color: #fff;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.95fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .hero-copy h2 {
+      margin: 0;
+      font-family: "Sora", "Manrope", sans-serif;
+      font-size: clamp(1.8rem, 2.8vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      max-width: 760px;
+    }
+
+    .hero-copy p {
+      margin: 16px 0 0;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.72;
+      max-width: 720px;
+      font-size: 1rem;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hero-pills span {
+      border-radius: 999px;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.96);
+      white-space: nowrap;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .trust-card {
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .trust-card span {
+      display: block;
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 0.74rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .trust-card strong {
+      display: block;
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+
+    .trust-card p {
+      margin: 8px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      line-height: 1.55;
+      font-size: 0.88rem;
+    }
+
+    .hero-floats {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .float-card {
+      border-radius: 22px;
+      padding: 16px 18px;
+      background: var(--card-strong);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+      box-shadow: 0 18px 40px rgba(16, 35, 92, 0.12);
+    }
+
+    .float-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .float-card strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+
+    .float-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.84rem;
+    }
+
+    .float-card.audit strong,
+    .float-card.policy strong {
+      word-break: break-word;
+    }
+
+    .option-strip {
+      margin-top: 6px;
+      border-radius: 26px;
+      padding: 18px;
+    }
+
+    .option-strip-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .option-block span.label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .option-bar {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 7px;
+      border-radius: 18px;
+      background: rgba(18, 32, 74, 0.05);
+      border: 1px solid rgba(18, 32, 74, 0.06);
+    }
+
+    .option-bar button {
+      border: none;
+      border-radius: 14px;
+      padding: 11px 14px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .option-bar button:hover {
+      transform: translateY(-1px);
+    }
+
+    .option-bar button.active {
+      background: linear-gradient(135deg, #fff, #edf3ff);
+      color: var(--navy);
+      box-shadow: 0 8px 18px rgba(17, 35, 86, 0.08);
+    }
+
+    .principle-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .principle-chips span {
+      border-radius: 999px;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(18, 32, 74, 0.06);
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.9fr);
+      gap: 20px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .dashboard-main,
+    .dashboard-side {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .workspace,
+    .conversation,
+    .insights,
+    .support-card {
+      border-radius: var(--radius-xl);
+      padding: 22px;
+    }
+
+    .section-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-top .section-copy p {
+      margin: 0 0 6px;
+      color: #315dff;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .section-top .section-copy h3 {
+      margin: 0;
+      font-size: 1.14rem;
+      line-height: 1.35;
+    }
+
+    .section-helper {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.92rem;
+    }
+
+    .mode-switch.compact {
+      flex-shrink: 0;
+    }
+
+    .scenario-rail {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .scenario-card {
+      position: relative;
+      width: 100%;
+      text-align: left;
+      border: none;
+      cursor: pointer;
+      border-radius: 22px;
+      padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.94));
+      border: 1px solid rgba(18, 32, 74, 0.08);
+      box-shadow: 0 16px 34px rgba(17, 35, 86, 0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .scenario-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(17, 35, 86, 0.12);
+      border-color: rgba(35, 88, 255, 0.16);
+    }
+
+    .scenario-card:disabled {
+      cursor: not-allowed;
+      opacity: 0.68;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .scenario-card.block::before,
+    .scenario-card.mask::before,
+    .scenario-card.allow::before,
+    .scenario-card.stream::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+    }
+
+    .scenario-card.block::before {
+      background: var(--danger-soft);
+    }
+
+    .scenario-card.mask::before {
+      background: var(--gold-soft);
+    }
+
+    .scenario-card.allow::before {
+      background: var(--success-soft);
+    }
+
+    .scenario-card.stream::before {
+      background: var(--primary-soft);
+    }
+
+    .scenario-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-left: 52px;
+      margin-bottom: 12px;
+    }
+
+    .scenario-meta span {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .scenario-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .scenario-badge.block {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .scenario-badge.mask {
+      background: var(--gold-soft);
+      color: #b86b00;
+    }
+
+    .scenario-badge.allow {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .scenario-badge.stream {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .scenario-card h4 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.4;
+    }
+
+    .scenario-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 0.9rem;
+    }
+
+    .scenario-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .scenario-foot span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.48;
+    }
+
+    .scenario-foot strong {
+      color: var(--primary);
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+
+    .empty-scenarios {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(18, 32, 74, 0.04);
+      border: 1px dashed rgba(18, 32, 74, 0.12);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .composer {
+      margin-top: 18px;
+      border-radius: 26px;
+      padding: 18px;
+      background: linear-gradient(180deg, #fff, #f4f8ff);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+    }
+
+    .composer label {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--ink);
+      font-size: 0.92rem;
+      font-weight: 800;
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 138px;
+      resize: vertical;
+      border: none;
+      outline: none;
+      border-radius: 20px;
+      padding: 18px;
+      font: inherit;
+      color: var(--ink);
+      background: #f7faff;
+      box-shadow: inset 0 0 0 1px rgba(18, 32, 74, 0.08);
+      line-height: 1.72;
+      transition: box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .composer textarea:focus {
+      background: #fff;
+      box-shadow:
+        inset 0 0 0 1px rgba(35, 88, 255, 0.24),
+        0 0 0 5px rgba(35, 88, 255, 0.08);
+    }
+
+    .composer-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 16px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #2f61ff, #15327a);
+      box-shadow: 0 16px 34px rgba(35, 88, 255, 0.26);
+    }
+
+    .btn-secondary {
+      color: var(--ink);
+      background: rgba(18, 32, 74, 0.06);
+    }
+
+    .conversation {
+      min-height: 650px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .badge-inline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(18, 32, 74, 0.08);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .badge-inline.warn {
+      background: var(--gold-soft);
+      color: #b86b00;
+    }
+
+    .chat-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 440px;
+      max-height: 72vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .message {
+      max-width: 90%;
+      border-radius: 24px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #ffffff, #f6f9ff);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+      box-shadow: 0 12px 28px rgba(17, 35, 86, 0.08);
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #204fe2, #0f1c4a);
+      color: #fff;
+      box-shadow: 0 16px 30px rgba(35, 88, 255, 0.24);
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+    }
+
+    .message.system {
+      align-self: center;
+      max-width: 100%;
+      background: rgba(18, 32, 74, 0.04);
+      border-style: dashed;
+      color: var(--muted);
+    }
+
+    .message.blocked,
+    .message.guarded {
+      background: linear-gradient(180deg, #fff7f7, #fff3f3);
+      border-color: rgba(235, 87, 87, 0.18);
+    }
+
+    .message-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .message-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .message-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(18, 32, 74, 0.08);
+      color: inherit;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .message.user .message-tag {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .message-body {
+      white-space: pre-wrap;
+      line-height: 1.72;
+      font-size: 0.96rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .mini-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(18, 32, 74, 0.08);
+      color: inherit;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .message.user .mini-chip {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .message-meta {
+      margin-top: 12px;
+      color: inherit;
+      opacity: 0.74;
+      font-size: 0.83rem;
+      line-height: 1.5;
+    }
+
+    .insight-tabs {
+      margin-bottom: 16px;
+    }
+
+    .insight-pane {
+      display: none;
+    }
+
+    .insight-pane.active {
+      display: block;
+    }
+
+    .assessment-panel {
+      border-radius: 24px;
+      padding: 18px;
+      background: linear-gradient(180deg, #fff, #f8fbff);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+    }
+
+    .assessment-panel[data-tone="allow"] {
+      border-color: rgba(22, 155, 107, 0.18);
+    }
+
+    .assessment-panel[data-tone="mask"] {
+      border-color: rgba(255, 185, 94, 0.2);
+    }
+
+    .assessment-panel[data-tone="block"] {
+      border-color: rgba(235, 87, 87, 0.2);
+    }
+
+    .tone {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(18, 32, 74, 0.08);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .tone-allow {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .tone-mask {
+      background: var(--gold-soft);
+      color: #b86b00;
+    }
+
+    .tone-block {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .inspection-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .inspection-card {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(18, 32, 74, 0.04);
+      border: 1px solid rgba(18, 32, 74, 0.06);
+    }
+
+    .inspection-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .inspection-card strong {
+      display: block;
+      line-height: 1.4;
+      font-size: 0.94rem;
+    }
+
+    .subheading {
+      margin: 18px 0 10px;
+      color: #315dff;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .signal-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .signal-chip {
+      min-width: 130px;
+      border-radius: 18px;
+      padding: 10px 12px;
+      background: rgba(18, 32, 74, 0.04);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+    }
+
+    .signal-chip strong {
+      display: block;
+      font-size: 0.88rem;
+      margin-bottom: 5px;
+    }
+
+    .signal-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .signal-chip.block {
+      background: var(--danger-soft);
+      border-color: rgba(235, 87, 87, 0.16);
+    }
+
+    .signal-chip.mask {
+      background: var(--gold-soft);
+      border-color: rgba(255, 185, 94, 0.18);
+    }
+
+    .signal-chip.allow {
+      background: var(--success-soft);
+      border-color: rgba(22, 155, 107, 0.16);
+    }
+
+    .empty-state {
+      width: 100%;
+      border-radius: 18px;
+      padding: 14px 16px;
+      color: var(--muted);
+      background: rgba(18, 32, 74, 0.04);
+      border: 1px dashed rgba(18, 32, 74, 0.12);
+      line-height: 1.55;
+    }
+
+    .code-block {
+      margin: 0;
+      padding: 16px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #0f1b4a, #081130);
+      color: #eef4ff;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.7;
+      min-height: 120px;
+      font-size: 0.9rem;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .audit-note {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.88rem;
+    }
+
+    .pipeline-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pipeline-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(18, 32, 74, 0.04);
+      border: 1px solid rgba(18, 32, 74, 0.06);
+    }
+
+    .pipeline-index {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--ink);
+      background: rgba(18, 32, 74, 0.08);
+    }
+
+    .pipeline-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.92rem;
+    }
+
+    .pipeline-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.56;
+    }
+
+    .pipeline-item.active .pipeline-index {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .pipeline-item.warn .pipeline-index {
+      background: var(--gold-soft);
+      color: #b86b00;
+    }
+
+    .pipeline-item.alert .pipeline-index {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .pipeline-item.skipped {
+      opacity: 0.7;
+    }
+
+    .criteria-list,
+    .support-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .criteria-list strong,
+    .support-list strong {
+      color: var(--ink);
+    }
+
+    .support-card .support-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .support-box {
+      border-radius: 20px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #f6f9ff);
+      border: 1px solid rgba(18, 32, 74, 0.08);
+    }
+
+    .support-box span {
+      display: block;
+      color: #315dff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .support-box p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .loading::after {
+      content: " ";
+      display: inline-block;
+      width: 1em;
+      overflow: hidden;
+      vertical-align: bottom;
+      animation: dots 1.2s steps(3, end) infinite;
+    }
+
+    @keyframes dots {
+      0% { width: 0; }
+      100% { width: 1em; }
+    }
+
+    @media (max-width: 1280px) {
+      .hero-grid,
+      .option-strip-row,
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-floats {
+        position: static;
+        margin-top: 16px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero-wrap {
+        padding-bottom: 0;
+      }
+
+      .hero-card {
+        padding-bottom: 34px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        padding: 16px 16px 28px;
+      }
+
+      .appbar,
+      .section-top,
+      .composer-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .top-actions {
+        justify-content: stretch;
+      }
+
+      .hero-copy h2 {
+        font-size: 1.8rem;
+      }
+
+      .hero-floats,
+      .scenario-rail,
+      .inspection-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+
+      .option-bar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="appbar panel">
+      <div class="brand">
+        <div class="brand-mark">LF</div>
+        <div class="brand-copy">
+          <p class="eyebrow">AI Security Banking-Style Demo</p>
+          <h1>Legit Flow Control Console</h1>
+          <p>Giao diện mới đi theo kiểu app banking: card nổi, điều hướng rõ, option bars để chọn nhanh scenario và mode, giúp demo trông gọn và thân thiện hơn.</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="top-chip gateway">
+          <span>Gateway</span>
+          <strong>
+            <span id="gatewayStatusText">Checking...</span>
+            <span id="gatewayPill" class="gateway-pill warn">Checking</span>
+          </strong>
+        </div>
+
+        <div class="top-chip">
+          <span>Policy</span>
+          <strong id="policyText">-</strong>
+        </div>
+
+        <div class="profile-chip">
+          <div class="profile-avatar">DO</div>
+          <div>
+            <span>Session</span>
+            <strong>Demo Operator</strong>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero-wrap">
+      <article class="hero-card">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow" style="color: rgba(255,255,255,0.72);">Protected AI Traffic</p>
+            <h2>Nhìn như dashboard ngân hàng, nhưng đang kiểm soát request AI bằng policy, sanitization và audit trail.</h2>
+            <p>Thay vì một khung chat rời rạc, giao diện này gom toàn bộ thao tác thành các card nổi rõ ràng: nhập prompt, chọn scenario, xem policy outcome, trace response và streaming guard trong cùng một flow.</p>
+            <div class="hero-pills">
+              <span>Restricted = Block</span>
+              <span>Confidential = Mask</span>
+              <span>Tier 1 Audit Always-On</span>
+              <span>Streaming Guard Ready</span>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <div class="trust-card">
+              <span>What feels better now</span>
+              <strong>Ít khối rời rạc, ít chữ loãng, nhiều entry point rõ ràng để thao tác nhanh.</strong>
+              <p>Người xem chỉ cần nhìn vào là biết đang ở chế độ nào, policy nào và nên bấm ở đâu tiếp theo.</p>
+            </div>
+
+            <div class="trust-card">
+              <span>How this maps to docs</span>
+              <strong>Vẫn bám README, runbook và product scope hiện tại.</strong>
+              <p>UI chỉ làm sáng rõ những capability đã có: intercept, detect, sanitize, route, output guard và auditability.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="hero-floats">
+        <div class="float-card">
+          <span>Model</span>
+          <strong id="modelText">-</strong>
+          <p>Model hiện tại mà demo app gửi qua gateway.</p>
+        </div>
+
+        <div class="float-card policy">
+          <span>Policy Snapshot</span>
+          <strong id="policyDescription">Đang tải thông tin policy hiện hành.</strong>
+        </div>
+
+        <div class="float-card audit">
+          <span>Audit Store</span>
+          <strong id="auditText">-</strong>
+          <p>Đường dẫn audit đang được hiển thị theo dạng thân thiện hơn.</p>
+        </div>
+
+        <div class="float-card">
+          <span>User Goal</span>
+          <strong>Chạy nhanh, nhìn sạch, giải thích rõ outcome</strong>
+          <p>Đúng tinh thần một app quản trị nội bộ kiểu tài chính số.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="option-strip panel">
+      <div class="option-strip-row">
+        <div class="option-block">
+          <span class="label">Scenario Filter</span>
+          <div class="option-bar" id="scenarioFilterBar">
+            <button type="button" data-filter="all" class="active">Tất cả</button>
+            <button type="button" data-filter="block">Block</button>
+            <button type="button" data-filter="mask">Mask</button>
+            <button type="button" data-filter="stream">Streaming</button>
+            <button type="button" data-filter="allow">Allow</button>
+          </div>
+        </div>
+
+        <div class="option-block">
+          <span class="label">Quick Principles</span>
+          <div class="principle-chips">
+            <span>Không leak raw PII</span>
+            <span>Response trace rõ ràng</span>
+            <span>Mode switch dễ hiểu</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <section class="dashboard-main">
+        <article class="workspace panel">
+          <div class="section-top">
+            <div class="section-copy">
+              <p>Compose & Act</p>
+              <h3>Chọn mode, chạy scenario hoặc nhập prompt của riêng bạn</h3>
+            </div>
+
+            <div class="option-bar mode-switch compact" id="modeSwitch">
+              <button type="button" data-mode="standard" class="active">Standard Flow</button>
+              <button type="button" data-mode="stream">Streaming Guard</button>
+            </div>
+          </div>
+
+          <p id="modeDescription" class="section-helper">Standard Flow dùng request thường để cho thấy input policy enforcement, transform và response trace.</p>
+
+          <div id="scenarioList" class="scenario-rail"></div>
+
+          <div class="composer">
+            <label for="input">Prompt</label>
+            <textarea id="input" placeholder="Nhập prompt để kiểm tra chính sách, sanitized input và phản hồi qua gateway..."></textarea>
+
+            <div class="composer-footer">
+              <div class="helper">Enter để gửi. Shift+Enter để xuống dòng. Scenario cards ở trên là các quick actions kiểu app banking.</div>
+              <div class="button-row">
+                <button type="button" id="clearBtn" class="btn btn-secondary">Xóa hội thoại</button>
+                <button type="button" id="sendBtn" class="btn btn-primary">Gửi qua gateway</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="conversation panel">
+          <div class="section-top">
+            <div class="section-copy">
+              <p>Conversation Trace</p>
+              <h3>Request, policy outcome và phản hồi qua gateway</h3>
+            </div>
+            <span id="activityBadge" class="badge-inline">Idle</span>
+          </div>
+
+          <div id="chat" class="chat-feed"></div>
+        </article>
+      </section>
+
+      <aside class="dashboard-side">
+        <article class="insights panel">
+          <div class="section-top">
+            <div class="section-copy">
+              <p>Security Insight</p>
+              <h3>Một card, nhiều tab, ít rối hơn</h3>
+            </div>
+          </div>
+
+          <div class="option-bar insight-tabs" id="insightTabs">
+            <button type="button" data-tab="policy" class="active">Policy View</button>
+            <button type="button" data-tab="pipeline">Pipeline</button>
+            <button type="button" data-tab="criteria">Pass Criteria</button>
+          </div>
+
+          <section id="policyPane" class="insight-pane active">
+            <div id="assessmentPanel" class="assessment-panel" data-tone="neutral">
+              <div class="section-top" style="margin-bottom: 0;">
+                <div class="section-copy">
+                  <p>Structured Preview</p>
+                  <h3>Policy assessment trước khi forward</h3>
+                </div>
+                <span id="assessmentTone" class="tone">Waiting</span>
+              </div>
+
+              <p id="assessmentSummary" class="section-helper" style="margin-top: 14px;">Nhập prompt hoặc chạy một scenario để xem request hiện tại sẽ allow, mask hay block dữ liệu như thế nào.</p>
+
+              <div class="inspection-grid">
+                <div class="inspection-card">
+                  <span>Overall Action</span>
+                  <strong id="actionValue">Allow</strong>
+                </div>
+                <div class="inspection-card">
+                  <span>Policy</span>
+                  <strong id="policyValue">default-hardened</strong>
+                </div>
+              </div>
+
+              <h4 class="subheading">Detections</h4>
+              <div id="detectionList" class="signal-list">
+                <div class="empty-state">Chưa có structured detections nào được phân tích.</div>
+              </div>
+
+              <h4 class="subheading">Sanitized Input</h4>
+              <pre id="sanitizedPreview" class="code-block">Structured preview sẽ hiển thị tại đây sau khi bạn gửi prompt.</pre>
+
+              <p id="auditNote" class="audit-note">Tier 1 metadata always-on. Tier 2 chỉ dùng bản redacted hoặc masked khi có transform.</p>
+            </div>
+          </section>
+
+          <section id="pipelinePane" class="insight-pane">
+            <ul id="pipelineList" class="pipeline-list">
+              <li class="pipeline-item active" data-step="intercept">
+                <div class="pipeline-index">1</div>
+                <div>
+                  <strong>Intercept</strong>
+                  <span>Demo app gửi request qua gateway thay vì đi thẳng tới model.</span>
+                </div>
+              </li>
+              <li class="pipeline-item" data-step="detect">
+                <div class="pipeline-index">2</div>
+                <div>
+                  <strong>Detect</strong>
+                  <span>Structured detector soi CCCD, SĐT, email, JWT và API keys theo policy demo.</span>
+                </div>
+              </li>
+              <li class="pipeline-item" data-step="sanitize">
+                <div class="pipeline-index">3</div>
+                <div>
+                  <strong>Sanitize</strong>
+                  <span>Restricted bị block, Confidential bị mask để giữ utility và an toàn.</span>
+                </div>
+              </li>
+              <li class="pipeline-item" data-step="route">
+                <div class="pipeline-index">4</div>
+                <div>
+                  <strong>Route</strong>
+                  <span>Chỉ prompt đủ an toàn mới được forward đến backend mock hoặc LLM thật.</span>
+                </div>
+              </li>
+              <li class="pipeline-item" data-step="output">
+                <div class="pipeline-index">5</div>
+                <div>
+                  <strong>Output Guard</strong>
+                  <span>Streaming mode bật holdback scan và truncate an toàn nếu response có dữ liệu nhạy cảm.</span>
+                </div>
+              </li>
+              <li class="pipeline-item" data-step="audit">
+                <div class="pipeline-index">6</div>
+                <div>
+                  <strong>Audit</strong>
+                  <span>Tier 1 metadata luôn được ghi lại để đảm bảo auditability.</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section id="criteriaPane" class="insight-pane">
+            <ul class="criteria-list">
+              <li><strong>Pass:</strong> Structured PII và secrets bị block hoặc mask đúng policy và không lộ raw trên UI.</li>
+              <li><strong>Pass:</strong> Streaming mode có thể truncate an toàn thay vì để response rò rỉ thông tin nhạy cảm.</li>
+              <li><strong>Pass:</strong> Người xem hiểu ngay mode hiện tại, request status và request trace mà không cần đọc code trước.</li>
+              <li><strong>Fail:</strong> UI quá nhiều khối ngang nhau, không có entry point rõ ràng, hoặc mô tả capability vượt quá MVP thật sự.</li>
+            </ul>
+          </section>
+        </article>
+
+        <article class="support-card panel">
+          <div class="section-top">
+            <div class="section-copy">
+              <p>MVP Fit</p>
+              <h3>Thiết kế gọn hơn nhưng vẫn đúng tài liệu</h3>
+            </div>
+          </div>
+
+          <div class="support-grid">
+            <div class="support-box">
+              <span>Live Today</span>
+              <p>UI đang nhấn mạnh những thứ repo thực sự có: policy-as-code, audit, streaming guard demo, request trace và scenario testing.</p>
+            </div>
+
+            <div class="support-box">
+              <span>Next Later</span>
+              <p>Những mục như approval UI, staged rollout hay hardening sâu hơn vẫn được giữ là roadmap, không bị lẫn với phần demo hiện tại.</p>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    const scenarios = [
+      {
+        id: 'vn-pii',
+        title: 'VN PII Detection',
+        type: 'Runbook 01',
+        mode: 'standard',
+        category: 'block',
+        badge: 'Block',
+        prompt: 'Thông tin khách hàng: CCCD 001234567890, SĐT 0912345678 cần xác minh hợp đồng.',
+        description: 'Case structured PII, trong đó CCCD phải bị block và SĐT đi theo policy Confidential.',
+        expectation: 'Restricted block + Confidential mask'
+      },
+      {
+        id: 'api-key',
+        title: 'Secret Detection',
+        type: 'Runbook 02',
+        mode: 'standard',
+        category: 'block',
+        badge: 'Block',
+        prompt: 'API key: sk-abc123def456ghi789jkl012mno345pqr678',
+        description: 'Chứng minh secret bị chặn trước khi prompt rời môi trường doanh nghiệp.',
+        expectation: 'Restricted block'
+      },
+      {
+        id: 'jwt',
+        title: 'JWT Token',
+        type: 'Runbook 03',
+        mode: 'standard',
+        category: 'block',
+        badge: 'Block',
+        prompt: 'Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+        description: 'Kiểm tra secret detection với bearer token trong prompt.',
+        expectation: 'Restricted block'
+      },
+      {
+        id: 'mask',
+        title: 'Confidential Masking',
+        type: 'Policy Demo',
+        mode: 'standard',
+        category: 'mask',
+        badge: 'Mask',
+        prompt: 'Liên hệ khách hàng qua email minh.nguyen@company.com.vn hoặc SĐT 0912345678.',
+        description: 'Cho thấy dữ liệu Confidential có thể được mask thay vì block cứng.',
+        expectation: 'Confidential mask'
+      },
+      {
+        id: 'clean',
+        title: 'Clean Text',
+        type: 'Runbook 04',
+        mode: 'standard',
+        category: 'allow',
+        badge: 'Allow',
+        prompt: 'Hôm nay thời tiết đẹp. Hãy tóm tắt lịch công việc của nhóm theo phong cách ngắn gọn.',
+        description: 'Case an toàn để cho thấy request sạch đi qua gateway với trải nghiệm tự nhiên.',
+        expectation: 'Allow'
+      },
+      {
+        id: 'stream',
+        title: 'Streaming Output Guard',
+        type: 'Runbook 05',
+        mode: 'stream',
+        category: 'stream',
+        badge: 'Stream',
+        prompt: 'Kiểm thử streaming output guard: hãy mô phỏng một phản hồi có chứa thông tin nhạy cảm để xác minh cơ chế truncate an toàn.',
+        description: 'Chạy endpoint stream để minh họa holdback window, scan theo chunk và safe truncation.',
+        expectation: 'Safe truncation if sensitive output appears'
+      }
+    ];
+
+    const modeCopy = {
+      standard: 'Standard Flow dùng request thường để cho thấy input policy enforcement, transform và response trace.',
+      stream: 'Streaming Guard dùng endpoint stream để minh họa output holdback scan và truncate an toàn khi response có rủi ro.'
+    };
+
+    const state = {
+      mode: 'standard',
+      busy: false,
+      inspection: null,
+      scenarioFilter: 'all',
+      activeInsightTab: 'policy'
+    };
+
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const modeSwitch = document.getElementById('modeSwitch');
+    const modeDescription = document.getElementById('modeDescription');
+    const scenarioList = document.getElementById('scenarioList');
+    const scenarioFilterBar = document.getElementById('scenarioFilterBar');
+    const activityBadge = document.getElementById('activityBadge');
+    const gatewayPill = document.getElementById('gatewayPill');
+    const gatewayStatusText = document.getElementById('gatewayStatusText');
+    const modelText = document.getElementById('modelText');
+    const policyText = document.getElementById('policyText');
+    const auditText = document.getElementById('auditText');
+    const policyDescription = document.getElementById('policyDescription');
+    const assessmentPanel = document.getElementById('assessmentPanel');
+    const assessmentTone = document.getElementById('assessmentTone');
+    const assessmentSummary = document.getElementById('assessmentSummary');
+    const actionValue = document.getElementById('actionValue');
+    const policyValue = document.getElementById('policyValue');
+    const detectionList = document.getElementById('detectionList');
+    const sanitizedPreview = document.getElementById('sanitizedPreview');
+    const auditNote = document.getElementById('auditNote');
+    const pipelineList = document.getElementById('pipelineList');
+    const insightTabs = document.getElementById('insightTabs');
+    const policyPane = document.getElementById('policyPane');
+    const pipelinePane = document.getElementById('pipelinePane');
+    const criteriaPane = document.getElementById('criteriaPane');
+
+    function renderScenarios() {
+      scenarioList.innerHTML = '';
+
+      const filtered = scenarios.filter((scenario) => {
+        if (state.scenarioFilter === 'all') return true;
+        return scenario.category === state.scenarioFilter;
+      });
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-scenarios';
+        empty.textContent = 'Không có scenario nào cho filter này. Hãy chọn nhóm khác để tiếp tục demo.';
+        scenarioList.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach((scenario) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `scenario-card ${scenario.category}`;
+        button.innerHTML = `
+          <div class="scenario-meta">
+            <span>${scenario.type}</span>
+            <span class="scenario-badge ${scenario.category}">${scenario.badge}</span>
+          </div>
+          <h4>${scenario.title}</h4>
+          <p>${scenario.description}</p>
+          <div class="scenario-foot">
+            <span>${scenario.expectation}</span>
+            <strong>Run scenario</strong>
+          </div>
+        `;
+        button.addEventListener('click', () => runScenario(scenario));
+        scenarioList.appendChild(button);
+      });
+    }
+
+    function runScenario(scenario) {
+      if (state.busy) return;
+      setMode(scenario.mode);
+      setInsightTab('policy');
+      input.value = scenario.prompt;
+      autoResizeInput();
+      sendPrompt(`Scenario: ${scenario.title}`);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      modeDescription.textContent = modeCopy[mode];
+      [...modeSwitch.querySelectorAll('button')].forEach((button) => {
+        button.classList.toggle('active', button.dataset.mode === mode);
+      });
+      updatePipeline();
+    }
+
+    function setScenarioFilter(filter) {
+      state.scenarioFilter = filter;
+      [...scenarioFilterBar.querySelectorAll('button')].forEach((button) => {
+        button.classList.toggle('active', button.dataset.filter === filter);
+      });
+      renderScenarios();
+    }
+
+    function setInsightTab(tab) {
+      state.activeInsightTab = tab;
+      [...insightTabs.querySelectorAll('button')].forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tab);
+      });
+      policyPane.classList.toggle('active', tab === 'policy');
+      pipelinePane.classList.toggle('active', tab === 'pipeline');
+      criteriaPane.classList.toggle('active', tab === 'criteria');
+    }
+
+    function setBusy(isBusy) {
+      state.busy = isBusy;
+      sendBtn.disabled = isBusy;
+      clearBtn.disabled = isBusy;
+      input.disabled = isBusy;
+      [...scenarioList.querySelectorAll('button')].forEach((button) => {
+        button.disabled = isBusy;
+      });
+      sendBtn.textContent = isBusy ? 'Đang xử lý' : 'Gửi qua gateway';
+      sendBtn.classList.toggle('loading', isBusy);
+      activityBadge.textContent = isBusy ? 'Processing' : 'Idle';
+      activityBadge.className = isBusy ? 'badge-inline warn' : 'badge-inline';
+    }
+
+    function addMessage({ role, title, text, meta = '', chips = [], blocked = false, guarded = false }) {
+      const card = document.createElement('article');
+      card.className = `message ${role}`;
+      if (blocked) card.classList.add('blocked');
+      if (guarded) card.classList.add('guarded');
+
+      const head = document.createElement('div');
+      head.className = 'message-head';
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'message-title';
+      titleEl.textContent = title;
+
+      const tag = document.createElement('div');
+      tag.className = 'message-tag';
+      tag.textContent = role === 'user' ? 'Prompt' : role === 'assistant' ? 'Gateway' : 'Info';
+
+      head.appendChild(titleEl);
+      head.appendChild(tag);
+      card.appendChild(head);
+
+      const body = document.createElement('div');
+      body.className = 'message-body';
+      body.textContent = text;
+      card.appendChild(body);
+
+      if (chips.length) {
+        const row = document.createElement('div');
+        row.className = 'chip-row';
+        chips.forEach((chip) => {
+          const chipEl = document.createElement('span');
+          chipEl.className = 'mini-chip';
+          chipEl.textContent = chip;
+          row.appendChild(chipEl);
+        });
+        card.appendChild(row);
+      }
+
+      if (meta) {
+        const metaEl = document.createElement('div');
+        metaEl.className = 'message-meta';
+        metaEl.textContent = meta;
+        card.appendChild(metaEl);
+      }
+
+      chat.appendChild(card);
+      chat.scrollTop = chat.scrollHeight;
+
+      return { element: card, bodyEl: body };
+    }
+
+    function addIntroMessage() {
+      addMessage({
+        role: 'system',
+        title: 'How To Use',
+        text: 'Chọn một scenario card ở trên hoặc nhập prompt của bạn. Thanh filter giúp gom đúng nhóm test nhanh, còn tab bên phải giúp chuyển giữa policy view, pipeline và tiêu chí pass/fail mà không bị rối.',
+        chips: ['Banking-style layout', 'Option bars', 'Streaming supported']
+      });
+    }
+
+    async function sendPrompt(source = 'Manual prompt') {
+      if (state.busy) return;
+      const message = input.value.trim();
+      if (!message) return;
+
+      setBusy(true);
+      input.value = '';
+      autoResizeInput();
+      setInsightTab('policy');
+
+      let inspection;
+      try {
+        inspection = await inspectPrompt(message);
+      } catch (error) {
+        inspection = fallbackInspection(message);
+      }
+
+      state.inspection = inspection;
+      updateInspection(inspection);
+
+      addMessage({
+        role: 'user',
+        title: source,
+        text: message,
+        meta: inspection.summary,
+        chips: [
+          state.mode === 'stream' ? 'Streaming Guard' : 'Standard Flow',
+          actionBadge(inspection.overall_action)
+        ]
+      });
+
+      try {
+        if (state.mode === 'stream') {
+          await sendStream(message);
+        } else {
+          await sendStandard(message);
+        }
+      } catch (error) {
+        addMessage({
+          role: 'assistant',
+          title: 'Connection Issue',
+          text: error.message || 'Không thể kết nối tới demo app hoặc gateway.',
+          meta: 'Kiểm tra lại mock LLM, gateway và biến môi trường của demo.'
+        });
+      } finally {
+        setBusy(false);
+        input.focus();
+      }
+    }
+
+    async function inspectPrompt(message) {
+      const response = await fetch('/api/inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      if (!response.ok) {
+        throw new Error('Inspection unavailable');
+      }
+
+      return response.json();
+    }
+
+    async function sendStandard(message) {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await parseMaybeJSON(response);
+      addMessage({
+        role: 'assistant',
+        title: data.blocked ? 'Policy Blocked Request' : 'Gateway Response',
+        text: data.reply || 'Gateway returned no content.',
+        blocked: Boolean(data.blocked),
+        guarded: Boolean(data.blocked),
+        meta: formatMeta({
+          requestId: data.request_id,
+          mode: 'Standard Flow',
+          extra: data.blocked ? 'Request stopped before reaching the model.' : 'Response returned successfully.'
+        }),
+        chips: [
+          data.blocked ? 'Blocked before route' : 'Response received',
+          state.inspection ? actionBadge(state.inspection.overall_action) : 'Policy evaluated'
+        ]
+      });
+    }
+
+    async function sendStream(message) {
+      const response = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      if (!response.ok) {
+        const errorData = await parseMaybeJSON(response);
+        addMessage({
+          role: 'assistant',
+          title: response.status === 403 ? 'Policy Blocked Request' : 'Streaming Error',
+          text: errorData.reply || errorData.error || 'Streaming request failed.',
+          blocked: response.status === 403,
+          guarded: response.status === 403,
+          meta: formatMeta({
+            requestId: response.headers.get('X-Request-ID'),
+            mode: 'Streaming Guard',
+            extra: response.status === 403 ? 'Request blocked before stream started.' : 'Gateway returned an error for the streaming call.'
+          }),
+          chips: ['Streaming path', response.status === 403 ? 'Blocked' : 'Error']
+        });
+        return;
+      }
+
+      const requestId = response.headers.get('X-Request-ID');
+      const card = addMessage({
+        role: 'assistant',
+        title: 'Streaming Gateway Response',
+        text: '',
+        meta: formatMeta({
+          requestId,
+          mode: 'Streaming Guard',
+          extra: 'Receiving streamed chunks through output guard.'
+        }),
+        chips: ['Streaming path', 'Live chunks']
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let sawGuardTruncation = false;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        buffer = consumeSSE(buffer, (chunk) => {
+          if (chunk === '[DONE]') return;
+          if (chunk.includes('[Response truncated')) {
+            sawGuardTruncation = true;
+            card.element.classList.add('guarded');
+          }
+          card.bodyEl.textContent += chunk;
+          chat.scrollTop = chat.scrollHeight;
+        });
+      }
+
+      buffer += decoder.decode();
+      consumeSSE(buffer, (chunk) => {
+        if (chunk === '[DONE]') return;
+        if (chunk.includes('[Response truncated')) {
+          sawGuardTruncation = true;
+          card.element.classList.add('guarded');
+        }
+        card.bodyEl.textContent += chunk;
+      }, true);
+
+      if (!card.bodyEl.textContent.trim()) {
+        card.bodyEl.textContent = 'Không có nội dung stream được trả về.';
+      }
+
+      const meta = formatMeta({
+        requestId,
+        mode: 'Streaming Guard',
+        extra: sawGuardTruncation ? 'Output guard truncated unsafe content safely.' : 'Stream completed without policy violation.'
+      });
+      const metaEl = card.element.querySelector('.message-meta');
+      if (metaEl) metaEl.textContent = meta;
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function consumeSSE(buffer, onChunk, flush = false) {
+      const blocks = buffer.split(/\r?\n\r?\n/);
+      const completeBlocks = flush ? blocks : blocks.slice(0, -1);
+      const remainder = flush ? '' : blocks[blocks.length - 1];
+
+      completeBlocks.forEach((block) => {
+        if (!block.trim()) return;
+        const lines = block.split(/\r?\n/);
+        let payload = '';
+        lines.forEach((line) => {
+          if (!line.startsWith('data:')) return;
+          let piece = line.slice(5);
+          if (piece.startsWith(' ')) piece = piece.slice(1);
+          payload += piece;
+        });
+        if (payload) onChunk(payload);
+      });
+
+      return remainder;
+    }
+
+    async function loadStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const status = await response.json();
+        updateStatus(status);
+      } catch (error) {
+        gatewayPill.textContent = 'Offline';
+        gatewayPill.className = 'gateway-pill danger';
+        gatewayStatusText.textContent = 'Không lấy được trạng thái gateway';
+        policyDescription.textContent = 'Status endpoint chưa phản hồi. Hãy kiểm tra gateway hoặc demo app.';
+        auditText.textContent = '-';
+      }
+    }
+
+    function updateStatus(status) {
+      gatewayPill.textContent = status.gateway_ready ? 'Ready' : 'Degraded';
+      gatewayPill.className = status.gateway_ready ? 'gateway-pill ok' : 'gateway-pill warn';
+      gatewayStatusText.textContent = status.gateway_status || 'Unknown';
+      modelText.textContent = status.model || '-';
+      policyText.textContent = [status.policy_name, status.policy_version].filter(Boolean).join(' ');
+      policyDescription.textContent = status.policy_description || 'Default policy loaded for the demo.';
+      auditText.textContent = formatFriendlyPath(status.audit_dir);
+      auditText.title = status.audit_dir || '';
+    }
+
+    function updateInspection(inspection) {
+      const tone = inspection.overall_action || 'allow';
+      assessmentPanel.dataset.tone = tone;
+      assessmentTone.textContent = actionBadge(tone);
+      assessmentTone.className = `tone tone-${tone}`;
+      assessmentSummary.textContent = inspection.summary;
+      actionValue.textContent = actionBadge(tone);
+      policyValue.textContent = [inspection.policy_name, inspection.policy_version].filter(Boolean).join(' ');
+      sanitizedPreview.textContent = inspection.sanitized_input || 'No sanitized prompt available.';
+      auditNote.textContent = inspection.audit_note || 'Tier 1 metadata always-on.';
+      renderDetections(inspection.detections || []);
+      updatePipeline();
+    }
+
+    function renderDetections(detections) {
+      detectionList.innerHTML = '';
+
+      if (!detections.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'Không phát hiện structured PII hoặc secrets trong preview hiện tại.';
+        detectionList.appendChild(empty);
+        return;
+      }
+
+      detections.forEach((detection) => {
+        const item = document.createElement('div');
+        item.className = `signal-chip ${detection.action || 'allow'}`;
+
+        const label = document.createElement('strong');
+        label.textContent = detection.label;
+
+        const detail = document.createElement('span');
+        detail.textContent = `${detection.detail} • ${detection.tier} • x${detection.count}`;
+
+        const action = document.createElement('span');
+        action.textContent = `Action: ${actionBadge(detection.action)}`;
+
+        item.appendChild(label);
+        item.appendChild(detail);
+        item.appendChild(action);
+        detectionList.appendChild(item);
+      });
+    }
+
+    function updatePipeline() {
+      const action = state.inspection ? state.inspection.overall_action : null;
+
+      pipelineList.querySelectorAll('.pipeline-item').forEach((item) => {
+        item.classList.remove('active', 'warn', 'alert', 'skipped');
+        const step = item.dataset.step;
+
+        if (!action) {
+          if (step === 'intercept') item.classList.add('active');
+          return;
+        }
+
+        if (step === 'intercept' || step === 'detect' || step === 'audit') {
+          item.classList.add('active');
+          return;
+        }
+
+        if (step === 'sanitize') {
+          if (action === 'block') item.classList.add('alert');
+          else if (action === 'mask') item.classList.add('warn');
+          else item.classList.add('active');
+          return;
+        }
+
+        if (step === 'route') {
+          if (action === 'block') item.classList.add('skipped');
+          else item.classList.add('active');
+          return;
+        }
+
+        if (step === 'output') {
+          if (state.mode === 'stream') item.classList.add('warn');
+          else item.classList.add('active');
+        }
+      });
+    }
+
+    function actionBadge(action) {
+      switch (action) {
+        case 'block':
+          return 'Block';
+        case 'mask':
+          return 'Mask';
+        default:
+          return 'Allow';
+      }
+    }
+
+    function formatMeta({ requestId, mode, extra }) {
+      const parts = [];
+      if (requestId) parts.push(`Request ID: ${requestId}`);
+      if (mode) parts.push(mode);
+      if (extra) parts.push(extra);
+      return parts.join(' • ');
+    }
+
+    async function parseMaybeJSON(response) {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        return { error: text };
+      }
+    }
+
+    function fallbackInspection(message) {
+      return {
+        overall_action: 'allow',
+        summary: 'Structured preview tạm thời không khả dụng, nhưng bạn vẫn có thể tiếp tục gọi gateway.',
+        policy_name: 'default-hardened',
+        policy_version: 'preview-unavailable',
+        sanitized_input: message,
+        audit_note: 'Tier 1 metadata vẫn là nguồn trace chính thức trong gateway.',
+        detections: []
+      };
+    }
+
+    function clearConversation() {
+      chat.innerHTML = '';
+      state.inspection = null;
+      assessmentPanel.dataset.tone = 'neutral';
+      assessmentTone.textContent = 'Waiting';
+      assessmentTone.className = 'tone';
+      assessmentSummary.textContent = 'Nhập prompt hoặc chạy một scenario để xem request hiện tại sẽ allow, mask hay block dữ liệu như thế nào.';
+      actionValue.textContent = 'Allow';
+      sanitizedPreview.textContent = 'Structured preview sẽ hiển thị tại đây sau khi bạn gửi prompt.';
+      auditNote.textContent = 'Tier 1 metadata always-on. Tier 2 chỉ dùng bản redacted hoặc masked khi có transform.';
+      detectionList.innerHTML = '<div class="empty-state">Chưa có structured detections nào được phân tích.</div>';
+      updatePipeline();
+      setInsightTab('policy');
+      addIntroMessage();
+    }
+
+    function autoResizeInput() {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 260)}px`;
+    }
+
+    function formatFriendlyPath(path) {
+      if (!path) return '-';
+      const parts = path.split('/').filter(Boolean);
+      if (parts.length >= 2) {
+        return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
+      }
+      return path;
+    }
+
+    modeSwitch.querySelectorAll('button').forEach((button) => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
+    scenarioFilterBar.querySelectorAll('button').forEach((button) => {
+      button.addEventListener('click', () => setScenarioFilter(button.dataset.filter));
+    });
+
+    insightTabs.querySelectorAll('button').forEach((button) => {
+      button.addEventListener('click', () => setInsightTab(button.dataset.tab));
+    });
+
+    sendBtn.addEventListener('click', () => sendPrompt());
+    clearBtn.addEventListener('click', clearConversation);
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendPrompt();
+      }
+    });
+
+    input.addEventListener('input', autoResizeInput);
+
+    setMode('standard');
+    setScenarioFilter('all');
+    setInsightTab('policy');
+    clearConversation();
+    loadStatus();
+    setInterval(loadStatus, 30000);
+  </script>
+</body>
+</html>

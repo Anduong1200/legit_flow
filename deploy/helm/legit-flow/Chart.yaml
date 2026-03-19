@@ -1,0 +1,13 @@
+apiVersion: v2
+name: legit-flow
+description: Legit Flow — AI Security Data Plane for On-Prem Kubernetes
+type: application
+version: 0.1.0
+appVersion: "0.1.0-demo"
+keywords:
+  - ai-security
+  - pii-detection
+  - data-plane
+  - llm-proxy
+maintainers:
+  - name: Legit Flow Team

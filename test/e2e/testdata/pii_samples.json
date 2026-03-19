@@ -1,0 +1,72 @@
+{
+  "description": "Golden test vectors for PII detection — Vietnamese context",
+  "vectors": [
+    {
+      "id": "cccd-001",
+      "input": "Số CCCD: 001234567890",
+      "expected_type": "CCCD",
+      "expected_tier": "restricted",
+      "expected_value": "001234567890",
+      "should_detect": true
+    },
+    {
+      "id": "cccd-002",
+      "input": "CCCD cũ 9 số: 012345678",
+      "expected_type": "CCCD",
+      "should_detect": false,
+      "note": "Old 9-digit CMND — not matched by CCCD pattern"
+    },
+    {
+      "id": "phone-001",
+      "input": "Liên hệ SĐT 0912345678",
+      "expected_type": "PHONE_VN",
+      "expected_tier": "confidential",
+      "expected_value": "0912345678",
+      "should_detect": true
+    },
+    {
+      "id": "phone-002",
+      "input": "SĐT: 091-234-5678",
+      "expected_type": "PHONE_VN",
+      "expected_tier": "confidential",
+      "should_detect": true,
+      "note": "Phone with dashes"
+    },
+    {
+      "id": "phone-003",
+      "input": "Mã đơn hàng: 0351234567",
+      "expected_type": "PHONE_VN",
+      "expected_tier": "confidential",
+      "should_detect": true,
+      "note": "03x prefix — new Viettel number"
+    },
+    {
+      "id": "email-001",
+      "input": "Email: nguyen.van.a@company.com.vn",
+      "expected_type": "EMAIL",
+      "expected_tier": "confidential",
+      "expected_value": "nguyen.van.a@company.com.vn",
+      "should_detect": true
+    },
+    {
+      "id": "email-002",
+      "input": "Không có email ở đây",
+      "expected_type": "EMAIL",
+      "should_detect": false
+    },
+    {
+      "id": "clean-001",
+      "input": "Hôm nay thời tiết đẹp. Hãy đi dạo công viên.",
+      "expected_type": null,
+      "should_detect": false,
+      "note": "Clean Vietnamese text — no PII"
+    },
+    {
+      "id": "mixed-001",
+      "input": "Khách hàng Nguyễn Văn An, CCCD 001234567890, SĐT 0912345678, email an@corp.vn",
+      "expected_types": ["CCCD", "PHONE_VN", "EMAIL"],
+      "should_detect": true,
+      "note": "Multiple PII types in one text"
+    }
+  ]
+}
