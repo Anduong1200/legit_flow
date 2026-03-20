@@ -7,36 +7,36 @@ name: "demo-showcase"
 description: "Demo policy — pseudonymize restricted, mask confidential (shows transforms clearly)"
 
 defaults:
-  restricted: pseudonymize   # Show pseudonymization in action (instead of hard block)
-  confidential: mask         # Show masking in action
+  restricted: tokenize       # Encrypt to tokens
+  confidential: tokenize     # Encrypt to tokens
   internal: allow
   public: allow
 
 rules:
-  - name: pseudonymize-citizen-id
-    description: "Pseudonymize CCCD for demo visibility"
+  - name: tokenize-citizen-id
+    description: "Tokenize CCCD (Mã hoá 2 chiều)"
     detection_types: [CCCD]
     tier: restricted
-    action: pseudonymize
+    action: tokenize
     enabled: true
 
-  - name: redact-secrets
-    description: "Redact secrets (hard block even in demo)"
+  - name: tokenize-secrets
+    description: "Tokenize secrets"
     detection_types: [JWT, API_KEY]
     tier: restricted
-    action: redact
+    action: tokenize
     enabled: true
 
-  - name: mask-phone-demo
-    description: "Mask phone numbers"
+  - name: tokenize-phone
+    description: "Tokenize phone numbers"
     detection_types: [PHONE_VN]
     tier: confidential
-    action: mask
+    action: tokenize
     enabled: true
 
-  - name: mask-email-demo
-    description: "Mask emails"
+  - name: tokenize-email
+    description: "Tokenize emails"
     detection_types: [EMAIL]
     tier: confidential
-    action: mask
+    action: tokenize
     enabled: true

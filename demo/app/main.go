@@ -27,7 +27,7 @@ import (
 var staticFiles embed.FS
 
 var fallbackActionMap = map[detector.RiskTier]transformer.Action{
-	detector.TierRestricted:   transformer.ActionBlock,
+	detector.TierRestricted:   transformer.ActionTokenize,
 	detector.TierConfidential: transformer.ActionTokenize,
 	detector.TierInternal:     transformer.ActionAllow,
 	detector.TierPublic:       transformer.ActionAllow,
@@ -49,6 +49,7 @@ type demoInspector struct {
 
 type chatRequest struct {
 	Message string `json:"message"`
+	UserID  string `json:"user_id"`
 }
 
 type chatResponse struct {
@@ -197,9 +198,9 @@ func (a *demoApp) handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.logUserAudit(req.Message, "/api/chat")
+	a.logUserAudit(req.Message, "/api/chat", req.UserID)
 
-	proxyReq, err := a.buildGatewayRequest(r.Context(), "/v1/chat/completions", req.Message, false)
+	proxyReq, err := a.buildGatewayRequest(r.Context(), "/v1/chat/completions", req.Message, false, req.UserID)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, chatResponse{
 			Reply: "Không thể tạo request đến gateway.",
@@ -268,9 +269,9 @@ func (a *demoApp) handleChatStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.logUserAudit(req.Message, "/api/chat/stream")
+	a.logUserAudit(req.Message, "/api/chat/stream", req.UserID)
 
-	proxyReq, err := a.buildGatewayRequest(r.Context(), a.streamPath, req.Message, true)
+	proxyReq, err := a.buildGatewayRequest(r.Context(), a.streamPath, req.Message, true, req.UserID)
 	if err != nil {
 		http.Error(w, "could not create streaming request", http.StatusInternalServerError)
 		return
@@ -334,7 +335,7 @@ func (a *demoApp) handleChatStream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *demoApp) buildGatewayRequest(ctx context.Context, path string, message string, stream bool) (*http.Request, error) {
+func (a *demoApp) buildGatewayRequest(ctx context.Context, path string, message string, stream bool, userID string) (*http.Request, error) {
 	payload := map[string]interface{}{
 		"model": a.model,
 		"messages": []map[string]string{
@@ -355,7 +356,10 @@ func (a *demoApp) buildGatewayRequest(ctx context.Context, path string, message 
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User-ID", "demo-user")
+	if userID == "" {
+		userID = "demo-user"
+	}
+	req.Header.Set("X-User-ID", userID)
 	if stream {
 		req.Header.Set("Accept", "text/event-stream")
 	}
@@ -387,15 +391,18 @@ func (a *demoApp) checkGateway(ctx context.Context) (bool, string) {
 	return false, resp.Status
 }
 
-func (a *demoApp) logUserAudit(message, endpoint string) {
+func (a *demoApp) logUserAudit(message, endpoint, userID string) {
 	if a.auditDir == "" {
 		return
+	}
+	if userID == "" {
+		userID = "demo-user"
 	}
 	f, err := os.OpenFile(filepath.Join(a.auditDir, "user_audit.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err == nil {
 		defer f.Close()
 		timestamp := time.Now().Format(time.RFC3339)
-		f.WriteString(fmt.Sprintf("[%s] [%s] User prompt: %s\n", timestamp, endpoint, message))
+		f.WriteString(fmt.Sprintf("[%s] [User: %s] [%s] User prompt: %s\n", timestamp, userID, endpoint, message))
 	}
 }
 
@@ -504,7 +511,7 @@ func previewSummary(action transformer.Action, hasDetections bool) string {
 	case transformer.ActionMask:
 		return "Structured dữ liệu Confidential sẽ được mask rồi mới forward tới model để giữ utility và vẫn an toàn."
 	case transformer.ActionTokenize:
-		return "Dữ liệu nhạy cảm sẽ được Tokenize thành mã hóa an toàn (VD: TOK_xxx) rồi gửi tới LLM. Khi nhận về, hệ thống giải mã token để hiển thị dữ liệu gốc, giúp cả người dùng lẫn AI đều có utility mà không rò rỉ nguyên bản ra ngoài!"
+		return "Dữ liệu nhạy cảm (Restricted/Confidential) sẽ được Tokenize thành mã hóa an toàn (VD: TOK_xxx) rồi gửi tới LLM. Khi nhận về, hệ thống tự động giải mã token để hiển thị dữ liệu gốc, đảm bảo LLM không bao giờ thấy PII thực sự!"
 	default:
 		if hasDetections {
 			return "Prompt có tín hiệu nhưng vẫn được cho phép theo policy hiện tại."

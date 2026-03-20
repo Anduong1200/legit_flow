@@ -7,43 +7,43 @@ name: "default-hardened"
 description: "Default policy — block restricted, mask confidential, allow internal/public"
 
 defaults:
-  restricted: block          # CCCD, bank accounts, secrets → hard block
-  confidential: mask         # phone, email → partial masking
+  restricted: tokenize       # CCCD, bank accounts, secrets → tokenize (round-trip encryption)
+  confidential: tokenize     # phone, email → tokenize
   internal: allow            # contextual flags → passthrough (log only)
   public: allow              # clean content → passthrough
 
 rules:
-  - name: block-citizen-id
-    description: "Block Vietnamese CCCD (Căn cước công dân) from output"
+  - name: tokenize-citizen-id
+    description: "Tokenize (Encrypt) Vietnamese CCCD (Căn cước công dân)"
     detection_types: [CCCD]
     tier: restricted
-    action: block
+    action: tokenize
     enabled: true
 
-  - name: block-secrets
-    description: "Block JWT tokens, API keys, and other secrets"
+  - name: tokenize-secrets
+    description: "Tokenize JWT tokens, API keys, and other secrets"
     detection_types: [JWT, API_KEY]
     tier: restricted
-    action: block
+    action: tokenize
     enabled: true
 
-  - name: mask-phone
-    description: "Mask Vietnamese phone numbers (keep prefix/suffix)"
+  - name: tokenize-phone
+    description: "Tokenize Vietnamese phone numbers"
     detection_types: [PHONE_VN]
     tier: confidential
-    action: mask
+    action: tokenize
     enabled: true
 
-  - name: mask-email
-    description: "Mask email addresses"
+  - name: tokenize-email
+    description: "Tokenize email addresses"
     detection_types: [EMAIL]
     tier: confidential
-    action: mask
+    action: tokenize
     enabled: true
 
-  - name: mask-bank-account
-    description: "Block bank account numbers"
+  - name: tokenize-bank-account
+    description: "Tokenize bank account numbers"
     detection_types: [BANK_ACCOUNT]
     tier: restricted
-    action: block
+    action: tokenize
     enabled: true
