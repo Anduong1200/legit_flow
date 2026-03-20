@@ -28,7 +28,7 @@ var staticFiles embed.FS
 
 var fallbackActionMap = map[detector.RiskTier]transformer.Action{
 	detector.TierRestricted:   transformer.ActionBlock,
-	detector.TierConfidential: transformer.ActionMask,
+	detector.TierConfidential: transformer.ActionTokenize,
 	detector.TierInternal:     transformer.ActionAllow,
 	detector.TierPublic:       transformer.ActionAllow,
 }
@@ -503,6 +503,8 @@ func previewSummary(action transformer.Action, hasDetections bool) string {
 		return "Structured dữ liệu Restricted sẽ bị chặn trước khi rời ứng dụng để giữ đúng mục tiêu zero structured exfiltration."
 	case transformer.ActionMask:
 		return "Structured dữ liệu Confidential sẽ được mask rồi mới forward tới model để giữ utility và vẫn an toàn."
+	case transformer.ActionTokenize:
+		return "Dữ liệu nhạy cảm sẽ được Tokenize thành mã hóa an toàn (VD: TOK_xxx) rồi gửi tới LLM. Khi nhận về, hệ thống giải mã token để hiển thị dữ liệu gốc, giúp cả người dùng lẫn AI đều có utility mà không rò rỉ nguyên bản ra ngoài!"
 	default:
 		if hasDetections {
 			return "Prompt có tín hiệu nhưng vẫn được cho phép theo policy hiện tại."
@@ -515,8 +517,8 @@ func auditNote(action transformer.Action) string {
 	switch action {
 	case transformer.ActionBlock:
 		return "Tier 1 metadata luôn được ghi. Với case Restricted, UI sẽ chỉ thấy block message thay vì dữ liệu gốc."
-	case transformer.ActionMask:
-		return "Tier 1 metadata luôn bật và Tier 2 chỉ lưu bản đã redacted/masked để phục vụ điều tra khi cần."
+	case transformer.ActionMask, transformer.ActionTokenize:
+		return "Tier 1 metadata luôn bật và Tier 2 chỉ lưu bản đã redacted/masked/tokenized để phục vụ điều tra khi cần."
 	default:
 		return "Tier 1 metadata luôn bật để giữ auditability ngay cả khi request được cho phép."
 	}

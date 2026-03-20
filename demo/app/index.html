@@ -1264,17 +1264,48 @@
         width: 100%;
       }
     }
+
+    /* Normal User Mode CSS Overrides */
+    .hero-wrap,
+    .option-strip,
+    .dashboard-side,
+    .mode-switch,
+    #modeDescription,
+    #scenarioList,
+    .top-actions .profile-chip,
+    .top-actions .top-chip:nth-child(2) {
+      display: none !important;
+    }
+
+    .dashboard {
+      display: flex !important;
+      justify-content: center !important;
+    }
+
+    .dashboard-main {
+      width: 100%;
+      max-width: 860px;
+      margin-top: -10px;
+    }
+    
+    .helper {
+      display: none !important;
+    }
+    
+    .brand-mark {
+      background: linear-gradient(135deg, #2358ff, #10b7a6);
+    }
   </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="appbar panel">
       <div class="brand">
-        <div class="brand-mark">LF</div>
+        <div class="brand-mark">AI</div>
         <div class="brand-copy">
-          <p class="eyebrow">AI Security Banking-Style Demo</p>
-          <h1>Legit Flow Control Console</h1>
-          <p>Giao diện kiểm soát bảo mật chuẩn tài chính: quản lý luồng dữ liệu AI thông qua chính sách, che giấu thông tin nhạy cảm và nhật ký kiểm toán (Audit Trail).</p>
+          <p class="eyebrow">An Toàn & Bảo Mật</p>
+          <h1>Trợ Lý AI</h1>
+          <p>Trải nghiệm trò chuyện thông minh với cam kết bảo vệ dữ liệu cá nhân của bạn tuyệt đối.</p>
         </div>
       </div>
 
@@ -1388,29 +1419,29 @@
         <article class="workspace panel">
           <div class="section-top">
             <div class="section-copy">
-              <p>Compose & Act</p>
-              <h3>Chọn mode, chạy scenario hoặc nhập prompt của riêng bạn</h3>
+              <p>Trò Chuyện</p>
+              <h3>Nhập câu hỏi hoặc lời nhắn của bạn</h3>
             </div>
 
-            <div class="option-bar mode-switch compact" id="modeSwitch">
+            <div class="option-bar mode-switch compact" id="modeSwitch" style="display:none;">
               <button type="button" data-mode="standard" class="active">Standard Flow</button>
               <button type="button" data-mode="stream">Streaming Guard</button>
             </div>
           </div>
 
-          <p id="modeDescription" class="section-helper">Standard Flow dùng request thường để cho thấy input policy enforcement, transform và response trace.</p>
+          <p id="modeDescription" class="section-helper" style="display:none;"></p>
 
           <div id="scenarioList" class="scenario-rail"></div>
 
           <div class="composer">
-            <label for="input">Prompt</label>
-            <textarea id="input" placeholder="Nhập prompt để kiểm tra chính sách, sanitized input và phản hồi qua gateway..."></textarea>
+            <label for="input" style="display:none;">Tìm kiếm</label>
+            <textarea id="input" placeholder="Bạn muốn hỏi gì hôm nay? (Nhấn Enter để gửi)"></textarea>
 
-            <div class="composer-footer">
-              <div class="helper">Enter để gửi. Shift+Enter để xuống dòng. Scenario cards ở trên là các quick actions kiểu app banking.</div>
+            <div class="composer-footer" style="justify-content: flex-end;">
+              <div class="helper" style="display:none;">Enter để gửi. Shift+Enter để xuống dòng.</div>
               <div class="button-row">
-                <button type="button" id="clearBtn" class="btn btn-secondary">Xóa hội thoại</button>
-                <button type="button" id="sendBtn" class="btn btn-primary">Gửi qua gateway</button>
+                <button type="button" id="clearBtn" class="btn btn-secondary">Đoạn chat mới</button>
+                <button type="button" id="sendBtn" class="btn btn-primary">Gửi tin nhắn</button>
               </div>
             </div>
           </div>
@@ -1419,10 +1450,10 @@
         <article class="conversation panel">
           <div class="section-top">
             <div class="section-copy">
-              <p>Conversation Trace</p>
-              <h3>Request, policy outcome và phản hồi qua gateway</h3>
+              <p>Lịch Sử</p>
+              <h3>Nội dung trò chuyện</h3>
             </div>
-            <span id="activityBadge" class="badge-inline">Idle</span>
+            <span id="activityBadge" class="badge-inline" style="display:none;">Idle</span>
           </div>
 
           <div id="chat" class="chat-feed"></div>
