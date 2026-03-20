@@ -1274,7 +1274,7 @@
         <div class="brand-copy">
           <p class="eyebrow">AI Security Banking-Style Demo</p>
           <h1>Legit Flow Control Console</h1>
-          <p>Giao diện mới đi theo kiểu app banking: card nổi, điều hướng rõ, option bars để chọn nhanh scenario và mode, giúp demo trông gọn và thân thiện hơn.</p>
+          <p>Giao diện kiểm soát bảo mật chuẩn tài chính: quản lý luồng dữ liệu AI thông qua chính sách, che giấu thông tin nhạy cảm và nhật ký kiểm toán (Audit Trail).</p>
         </div>
       </div>
 
@@ -1307,8 +1307,8 @@
         <div class="hero-grid">
           <div class="hero-copy">
             <p class="eyebrow" style="color: rgba(255,255,255,0.72);">Protected AI Traffic</p>
-            <h2>Nhìn như dashboard ngân hàng, nhưng đang kiểm soát request AI bằng policy, sanitization và audit trail.</h2>
-            <p>Thay vì một khung chat rời rạc, giao diện này gom toàn bộ thao tác thành các card nổi rõ ràng: nhập prompt, chọn scenario, xem policy outcome, trace response và streaming guard trong cùng một flow.</p>
+            <h2>Hệ thống kiểm soát và quản lý các yêu cầu AI, đảm bảo tuân thủ thiết lập bảo mật.</h2>
+            <p>Trải nghiệm người dùng đồng nhất, phân tách linh hoạt các phân hệ chức năng: nhập câu lệnh (prompt), lựa chọn kịch bản (scenario), kiểm duyệt yêu cầu qua các chính sách cấu hình và theo dõi dòng dữ liệu một cách trực quan.</p>
             <div class="hero-pills">
               <span>Restricted = Block</span>
               <span>Confidential = Mask</span>
@@ -1319,15 +1319,15 @@
 
           <div class="hero-side">
             <div class="trust-card">
-              <span>What feels better now</span>
-              <strong>Ít khối rời rạc, ít chữ loãng, nhiều entry point rõ ràng để thao tác nhanh.</strong>
-              <p>Người xem chỉ cần nhìn vào là biết đang ở chế độ nào, policy nào và nên bấm ở đâu tiếp theo.</p>
+              <span>Trải nghiệm người dùng</span>
+              <strong>Hiển thị trực quan, theo dõi dễ dàng các luồng dữ liệu và chính sách áp dụng.</strong>
+              <p>Màn hình giám sát luôn cập nhật trạng thái làm việc thực tế, giúp quản trị viên nắm bắt nhanh chóng thông tin của từng tiến trình.</p>
             </div>
 
             <div class="trust-card">
-              <span>How this maps to docs</span>
-              <strong>Vẫn bám README, runbook và product scope hiện tại.</strong>
-              <p>UI chỉ làm sáng rõ những capability đã có: intercept, detect, sanitize, route, output guard và auditability.</p>
+              <span>Tính năng cốt lõi</span>
+              <strong>Tuân thủ theo tài liệu, vận hành ổn định.</strong>
+              <p>Các khả năng đã được chứng minh: intercept, detect, sanitize, route, output guard và auditability.</p>
             </div>
           </div>
         </div>
@@ -1348,13 +1348,13 @@
         <div class="float-card audit">
           <span>Audit Store</span>
           <strong id="auditText">-</strong>
-          <p>Đường dẫn audit đang được hiển thị theo dạng thân thiện hơn.</p>
+          <p>Khu vực lưu trữ các nhật ký kiểm toán trong hệ thống.</p>
         </div>
 
         <div class="float-card">
-          <span>User Goal</span>
-          <strong>Chạy nhanh, nhìn sạch, giải thích rõ outcome</strong>
-          <p>Đúng tinh thần một app quản trị nội bộ kiểu tài chính số.</p>
+          <span>Mục tiêu vận hành</span>
+          <strong>Tốc độ cao, minh bạch kết quả</strong>
+          <p>Đáp ứng đầy đủ các tiêu chuẩn bảo mật cho ứng dụng quy mô doanh nghiệp.</p>
         </div>
       </div>
     </section>
@@ -2211,7 +2211,27 @@
       }
     });
 
-    input.addEventListener('input', autoResizeInput);
+    let notificationShown = false;
+    input.addEventListener('input', async (e) => {
+      autoResizeInput();
+      if (!notificationShown && e.target.value.trim().length > 0) {
+        notificationShown = true;
+        try {
+          const res = await fetch('/api/notification');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.message) {
+              addMessage({
+                role: 'system',
+                title: 'Hệ thống Thông Báo',
+                text: data.message,
+                chips: ['System Alert', 'Audit Warning']
+              });
+            }
+          }
+        } catch (err) {}
+      }
+    });
 
     setMode('standard');
     setScenarioFilter('all');

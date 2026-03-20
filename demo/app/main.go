@@ -7,6 +7,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
@@ -107,6 +108,7 @@ func main() {
 	mux.HandleFunc("/api/inspect", app.handleInspect)
 	mux.HandleFunc("/api/chat", app.handleChat)
 	mux.HandleFunc("/api/chat/stream", app.handleChatStream)
+	mux.HandleFunc("/api/notification", app.handleNotification)
 
 	addr := envOr("LISTEN_ADDR", ":3000")
 	log.Printf("Demo console running at http://localhost%s", addr)
@@ -195,6 +197,8 @@ func (a *demoApp) handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	a.logUserAudit(req.Message, "/api/chat")
+
 	proxyReq, err := a.buildGatewayRequest(r.Context(), "/v1/chat/completions", req.Message, false)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, chatResponse{
@@ -263,6 +267,8 @@ func (a *demoApp) handleChatStream(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+
+	a.logUserAudit(req.Message, "/api/chat/stream")
 
 	proxyReq, err := a.buildGatewayRequest(r.Context(), a.streamPath, req.Message, true)
 	if err != nil {
@@ -379,6 +385,27 @@ func (a *demoApp) checkGateway(ctx context.Context) (bool, string) {
 		return true, "Gateway ready"
 	}
 	return false, resp.Status
+}
+
+func (a *demoApp) logUserAudit(message, endpoint string) {
+	if a.auditDir == "" {
+		return
+	}
+	f, err := os.OpenFile(filepath.Join(a.auditDir, "user_audit.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err == nil {
+		defer f.Close()
+		timestamp := time.Now().Format(time.RFC3339)
+		f.WriteString(fmt.Sprintf("[%s] [%s] User prompt: %s\n", timestamp, endpoint, message))
+	}
+}
+
+func (a *demoApp) handleNotification(w http.ResponseWriter, r *http.Request) {
+	content, err := os.ReadFile("thong_bao.txt")
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]string{"message": "Vui lòng nhập cẩn thận."})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"message": string(content)})
 }
 
 func (i *demoInspector) Inspect(ctx context.Context, text string) inspectResponse {

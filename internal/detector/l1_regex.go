@@ -28,6 +28,7 @@ var (
 	phoneVNPattern     = regexp.MustCompile(`\b0[35789]\d[\s.-]?\d{3}[\s.-]?\d{4}\b`)
 	emailPattern       = regexp.MustCompile(`\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b`)
 	bankAccountPattern = regexp.MustCompile(`\b\d{8,19}\b`)
+	creditCardPattern  = regexp.MustCompile(`\b(?:\d[ -]*?){13,16}\b`)
 	jwtPattern         = regexp.MustCompile(`\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b`)
 	awsAPIKeyPattern   = regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`)
 	openAIKeyPattern   = regexp.MustCompile(`\bsk-[a-zA-Z0-9]{20,}\b`)
@@ -59,6 +60,12 @@ var patterns = []pattern{
 		tier: TierRestricted,
 		// Vietnamese bank accounts: 8-19 digits (common formats)
 		re: bankAccountPattern,
+	},
+	{
+		name: "credit_card",
+		tier: TierConfidential,
+		// Common credit card sizes
+		re: creditCardPattern,
 	},
 
 	// ── Secrets ─────────────────────────────────────────────────
