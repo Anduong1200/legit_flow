@@ -1,0 +1,23 @@
+[
+  { "id": "TP_01", "group": "True Positive", "scenario": "CCCD 12 số chuẩn", "input": "Số CCCD của tôi là 079090123456", "expected": "[MASKED_ID]" },
+  { "id": "TP_02", "group": "True Positive", "scenario": "SĐT Việt Nam chuẩn", "input": "Liên hệ SĐT 0912345678 để biết thêm", "expected": "[MASKED_PHONE]" },
+  { "id": "TP_03", "group": "True Positive", "scenario": "SĐT có dấu gạch ngang", "input": "SĐT: 091-234-5678", "expected": "[MASKED_PHONE]" },
+  { "id": "TP_04", "group": "True Positive", "scenario": "Email công việc/cá nhân", "input": "Gửi tài liệu vào admin@company.com.vn", "expected": "[MASKED_EMAIL]" },
+  { "id": "TP_05", "group": "True Positive", "scenario": "OpenAI API Key", "input": "Config: api_key=sk-abc123def456ghi789jkl012mno345pqr678", "expected": "[BLOCKED_SECRET]" },
+  { "id": "TP_06", "group": "True Positive", "scenario": "JWT Token chuẩn", "input": "Bearer eyJhbGciOiJIUzI1NiIs...SflKxwRJSMe", "expected": "[BLOCKED_JWT]" },
+  { "id": "TP_07", "group": "True Positive", "scenario": "AWS Access Key", "input": "AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "expected": "[BLOCKED_CREDENTIAL]" },
+  { "id": "TP_08", "group": "True Positive", "scenario": "Multiple PII (Hỗn hợp)", "input": "Khách hàng A, CCCD 001122334455, sđt 0987654321, key sk-12345", "expected": "Mask/Block 3 items" },
+  { "id": "TN_01", "group": "True Negative", "scenario": "Văn bản hội thoại", "input": "Hôm nay thời tiết đẹp. Hãy cho tôi biết dự báo thời tiết Hà Nội.", "expected": "passthrough" },
+  { "id": "TN_02", "group": "True Negative", "scenario": "Code snippet an toàn", "input": "def get_user(id): return db.query(id)", "expected": "passthrough" },
+  { "id": "TN_03", "group": "True Negative", "scenario": "Thông tin công khai", "input": "Hotline tổng đài là 1900 1560.", "expected": "passthrough" },
+  { "id": "TN_04", "group": "True Negative", "scenario": "Chuỗi có cấu trúc giống", "input": "eyJhbG is a prefix but not a full JWT token", "expected": "passthrough" },
+  { "id": "FP_01", "group": "False Positive", "scenario": "Dãy số ngẫu nhiên 9 số", "input": "Mã đơn hàng của bạn là 123456789.", "expected": "passthrough" },
+  { "id": "FP_02", "group": "False Positive", "scenario": "Dãy số ngẫu nhiên 12 số", "input": "Tổng tài sản công ty: 999123456789 VND.", "expected": "passthrough" },
+  { "id": "FP_03", "group": "False Positive", "scenario": "Chuỗi UUID", "input": "Request ID: fde2e69d-bf25-46c8-8b98-8af1e866d8a1", "expected": "passthrough" },
+  { "id": "FP_04", "group": "False Positive", "scenario": "Phiên bản / Serial", "input": "Sản phẩm v1.0.12345678", "expected": "passthrough" },
+  { "id": "FN_01", "group": "False Negative", "scenario": "CCCD có khoảng trắng", "input": "CCCD của tôi là 0 7 9 0 9 0 1 2 3 4 5 6", "expected": "mask via L2 LLM" },
+  { "id": "FN_02", "group": "False Negative", "scenario": "PII dạng chữ (Text)", "input": "Căn cước của em là không bảy chín, không chín không...", "expected": "mask via L2 LLM" },
+  { "id": "FN_03", "group": "False Negative", "scenario": "Dấu câu xen kẽ", "input": "SĐT: 0.9.1.2.3.4.5.6.7.8", "expected": "mask via L2 LLM" },
+  { "id": "FN_04", "group": "False Negative", "scenario": "Ẩn trong JSON/Cấu trúc", "input": "{\"user_id\": \"079090123456\", \"auth\": \"sk-123456...\"}", "expected": "mask" },
+  { "id": "FN_05", "group": "False Negative", "scenario": "Tiếng lóng/Từ viết tắt", "input": "Xác minh cccd: 001090123456 gửi về mail sếp ceo@corp.vn", "expected": "mask" }
+]

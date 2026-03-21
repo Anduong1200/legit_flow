@@ -1,0 +1,1 @@
+{"event_id":"","redacted_input":"{\"messages\":[{\"content\":\"TOK_8f4bca7c2bea8e16\",\"role\":\"user\"}],\"model\":\"gpt-4o-mini\"}","transforms":[{"type":"BANK_ACCOUNT","action":"tokenize","replacement":"TOK_8f4bca7c2bea8e16","start":25,"end":37}]}

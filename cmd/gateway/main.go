@@ -41,8 +41,12 @@ func main() {
 	// L1: always-on regex detectors (fast path)
 	reg.Register(detector.NewL1RegexDetector())
 
-	// L2: contextual classifier (API-based, pluggable)
-	if cfg.ClassifierProvider != "disabled" {
+	if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
+		if l2 := detector.NewL2LLMDetector(apiKey); l2 != nil {
+			reg.Register(l2)
+			logger.Info("L2 Contextual LLM Detector enabled (gemini-1.5-flash via genai-go)")
+		}
+	} else if cfg.ClassifierProvider != "disabled" {
 		l2 := detector.NewL2ContextualDetector(detector.L2Config{
 			Provider: cfg.ClassifierProvider,
 			APIURL:   cfg.ClassifierAPIURL,

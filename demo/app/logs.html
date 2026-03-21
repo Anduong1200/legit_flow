@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Legit Flow | Audit Logs Visualization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0f111a;
+      --panel-bg: #161824;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .appbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+    }
+
+    .brand-copy h1 { font-size: 1.25rem; font-weight: 600; }
+    .brand-copy p { color: var(--text-muted); font-size: 0.875rem; }
+
+    .btn {
+      background: var(--border-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    .btn:hover { background: rgba(255,255,255,0.15); }
+
+    .table-container {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
+    }
+
+    th {
+      background: rgba(255,255,255,0.02);
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .badge.block, .badge.redact { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+    .badge.mask, .badge.tokenize, .badge.pseudonymize { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+    .badge.allow { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    
+    .req-id {
+      font-family: monospace;
+      color: var(--text-muted);
+      cursor: copy;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="appbar">
+    <div class="brand-copy">
+      <h1>Audit Logs</h1>
+      <p>Tier 1 Gateway Request Tracking</p>
+    </div>
+    <a href="/" class="btn">🔙 Quay lại ứng dụng</a>
+  </header>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Thời gian (Timestamp)</th>
+          <th>User ID</th>
+          <th>Request ID</th>
+          <th>Phát hiện (Detections)</th>
+          <th>Trạng thái (Outcome)</th>
+          <th>Hành động (Action)</th>
+        </tr>
+      </thead>
+      <tbody id="logTableBody">
+        <tr><td colspan="6" style="text-align:center; color:#94a3b8;">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadLogs() {
+      try {
+        const response = await fetch('/api/logs');
+        const logs = await response.json();
+        
+        const tbody = document.getElementById('logTableBody');
+        tbody.innerHTML = '';
+
+        if (!logs || logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Không có dữ liệu log. Gửi request để tạo log mới.</td></tr>';
+          return;
+        }
+
+        logs.forEach(log => {
+          const tr = document.createElement('tr');
+          
+          let detStr = '-';
+          if (log.detections && log.detections.length > 0) {
+            detStr = log.detections.map(d => `<span style="color:#fcd34d;">${d.type}</span> (x${d.count})`).join(', ');
+          }
+
+          tr.innerHTML = `
+            <td style="white-space:nowrap; color:#94a3b8;">${new Date(log.timestamp).toLocaleString()}</td>
+            <td style="font-weight:600;">${log.user_id || 'System'}</td>
+            <td><span class="req-id" title="Copy ID">${log.request_id.split('-')[0]}...</span></td>
+            <td>${detStr}</td>
+            <td style="text-transform: capitalize;">${log.outcome}</td>
+            <td><span class="badge ${log.action}">${log.action}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        document.getElementById('logTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Lỗi khi tải Audit Logs!</td></tr>';
+      }
+    }
+
+    loadLogs();
+    setInterval(loadLogs, 10000); // Reload every 10s
+  </script>
+</body>
+</html>

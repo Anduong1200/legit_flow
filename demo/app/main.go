@@ -23,7 +23,7 @@ import (
 	"github.com/legitflow/legitflow/internal/transformer"
 )
 
-//go:embed index.html
+//go:embed *.html
 var staticFiles embed.FS
 
 var fallbackActionMap = map[detector.RiskTier]transformer.Action{
@@ -92,6 +92,23 @@ type detectionPreview struct {
 	Detail string `json:"detail"`
 }
 
+type auditLogEntry struct {
+	EventID    string `json:"event_id"`
+	Timestamp  string `json:"timestamp"`
+	RequestID  string `json:"request_id"`
+	UserID     string `json:"user_id"`
+	SourceIP   string `json:"source_ip"`
+	Action     string `json:"action"`
+	PolicyName string `json:"policy_name"`
+	Detections []struct {
+		Type  string `json:"type"`
+		Tier  string `json:"tier"`
+		Count int    `json:"count"`
+	} `json:"detections"`
+	Outcome   string `json:"outcome"`
+	LatencyMs int    `json:"latency_ms"`
+}
+
 func main() {
 	app := newDemoApp()
 	mux := http.NewServeMux()
@@ -105,11 +122,21 @@ func main() {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write(data)
 	})
+	mux.HandleFunc("/logs", func(w http.ResponseWriter, r *http.Request) {
+		data, err := staticFiles.ReadFile("logs.html")
+		if err != nil {
+			http.Error(w, "logs UI unavailable", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write(data)
+	})
 	mux.HandleFunc("/api/status", app.handleStatus)
 	mux.HandleFunc("/api/inspect", app.handleInspect)
 	mux.HandleFunc("/api/chat", app.handleChat)
 	mux.HandleFunc("/api/chat/stream", app.handleChatStream)
 	mux.HandleFunc("/api/notification", app.handleNotification)
+	mux.HandleFunc("/api/logs", app.handleApiLogs)
 
 	addr := envOr("LISTEN_ADDR", ":3000")
 	log.Printf("Demo console running at http://localhost%s", addr)
@@ -149,6 +176,12 @@ func newDemoApp() *demoApp {
 func newDemoInspector(policyDir string) *demoInspector {
 	reg := detector.NewRegistry()
 	reg.Register(detector.NewL1RegexDetector())
+
+	if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
+		if l2 := detector.NewL2LLMDetector(apiKey); l2 != nil {
+			reg.Register(l2)
+		}
+	}
 
 	inspector := &demoInspector{registry: reg}
 	if policyDir == "" {
@@ -413,6 +446,46 @@ func (a *demoApp) handleNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"message": string(content)})
+}
+
+func (a *demoApp) handleApiLogs(w http.ResponseWriter, r *http.Request) {
+	if a.auditDir == "" {
+		writeJSON(w, http.StatusOK, []auditLogEntry{})
+		return
+	}
+
+	files, err := os.ReadDir(a.auditDir)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Cannot read audit directory"})
+		return
+	}
+
+	var allLogs []auditLogEntry
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "tier1_") && strings.HasSuffix(file.Name(), ".jsonl") {
+			content, err := os.ReadFile(filepath.Join(a.auditDir, file.Name()))
+			if err != nil {
+				continue
+			}
+			scanner := bufio.NewScanner(bytes.NewReader(content))
+			for scanner.Scan() {
+				line := scanner.Text()
+				if line == "" {
+					continue
+				}
+				var entry auditLogEntry
+				if err := json.Unmarshal([]byte(line), &entry); err == nil {
+					allLogs = append(allLogs, entry)
+				}
+			}
+		}
+	}
+
+	sort.Slice(allLogs, func(i, j int) bool {
+		return allLogs[i].Timestamp > allLogs[j].Timestamp
+	})
+
+	writeJSON(w, http.StatusOK, allLogs)
 }
 
 func (i *demoInspector) Inspect(ctx context.Context, text string) inspectResponse {
