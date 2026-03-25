@@ -23,7 +23,7 @@ import (
 	"github.com/legitflow/legitflow/internal/transformer"
 )
 
-//go:embed *.html
+//go:embed *.html *.css
 var staticFiles embed.FS
 
 var fallbackActionMap = map[detector.RiskTier]transformer.Action{
@@ -129,6 +129,16 @@ type combinedLogsResponse struct {
 func main() {
 	app := newDemoApp()
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+		data, err := staticFiles.ReadFile("style.css")
+		if err != nil {
+			http.Error(w, "style missing", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		_, _ = w.Write(data)
+	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		data, err := staticFiles.ReadFile("index.html")
