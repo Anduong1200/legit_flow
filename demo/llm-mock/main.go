@@ -1,5 +1,6 @@
 // Mock LLM — Simulates an LLM endpoint for demo/testing.
-// Echoes prompts back with optional PII injection for testing output guard.
+// Responds intelligently to show that it only sees sanitized/tokenized content.
+// For streaming, can inject PII to test output guard truncation.
 package main
 
 import (
@@ -33,8 +34,7 @@ type chatReq struct {
 	} `json:"messages"`
 }
 
-// handleChat returns a mock LLM response, sometimes injecting PII
-// to test the output guard.
+// handleChat returns a mock LLM response.
 func handleChat(w http.ResponseWriter, r *http.Request) {
 	var req chatReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
@@ -44,7 +44,6 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		prompt = req.Messages[len(req.Messages)-1].Content
 	}
 
-	// Generate mock response
 	response := generateResponse(prompt)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -102,22 +101,122 @@ func handleStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateResponse(prompt string) string {
-	// For streaming output guard test, inject PII to test truncation
-	piiResponse := "Tài khoản ngân hàng: 1234567890123456, chi nhánh Hà Nội. Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+	lower := strings.ToLower(prompt)
 
+	// ── Streaming output guard test: inject real PII in response ──
 	if shouldForceSensitiveResponse(prompt) {
-		return piiResponse
+		return "Đây là thông tin bạn yêu cầu:\n" +
+			"- Tài khoản ngân hàng: 9876543210987654\n" +
+			"- SĐT liên hệ: 0912345678\n" +
+			"- Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 	}
 
-	// Echo back the sanitized prompt so the chat UI shows the actual masked tokens
-	return "[Echo] " + prompt
+	// ── Check if prompt contains tokens (TOK_xxx) → LLM only saw sanitized data ──
+	if containsTokens(prompt) {
+		tokCount := countTokens(prompt)
+		return fmt.Sprintf(
+			"Tôi nhận được tin nhắn của bạn, nhưng phát hiện %d mã token thay vì dữ liệu gốc. "+
+				"Điều này cho thấy Legit Flow Gateway đã mã hóa dữ liệu nhạy cảm trước khi gửi tới tôi. "+
+				"Tôi không thể đọc được nội dung gốc — chỉ thấy mã token (ví dụ: TOK_xxx). "+
+				"Dữ liệu của bạn đã được bảo vệ thành công.",
+			tokCount,
+		)
+	}
+
+	// ── Check if prompt contains [BLOCKED] or [REDACTED] markers ──
+	if strings.Contains(prompt, "[BLOCKED]") || strings.Contains(prompt, "[REDACTED]") {
+		return "Tin nhắn đã được gateway xử lý — một số nội dung bị chặn/ẩn trước khi tôi nhận được. " +
+			"Tôi chỉ nhìn thấy phần nội dung đã được phê duyệt bởi policy."
+	}
+
+	// ── Contextual responses for different scenarios ──
+
+	// Quantum / general knowledge
+	if strings.Contains(lower, "quantum") {
+		return "Quantum computing sử dụng qubit thay vì bit truyền thống. " +
+			"Khác với bit chỉ có 0 hoặc 1, qubit có thể ở trạng thái chồng chất (superposition), " +
+			"cho phép xử lý đồng thời nhiều phép tính. Hiện nay Google, IBM và các tổ chức nghiên cứu " +
+			"đang phát triển quantum computer với hàng nghìn qubit."
+	}
+
+	// HR / employee records
+	if strings.Contains(lower, "hồ sơ") || strings.Contains(lower, "nhân viên") || strings.Contains(lower, "danh sách") {
+		return "Tôi đã nhận được yêu cầu xử lý hồ sơ. " +
+			"Lưu ý: để bảo vệ thông tin cá nhân, các trường CCCD, SĐT, và email của nhân viên " +
+			"nên được mã hóa trước khi gửi qua hệ thống AI. " +
+			"Vui lòng xác nhận rằng dữ liệu nhạy cảm đã được xử lý bởi Legit Flow trước khi tôi phân tích."
+	}
+
+	// Financial / banking
+	if strings.Contains(lower, "chuyển tiền") || strings.Contains(lower, "ngân hàng") || strings.Contains(lower, "tài khoản") {
+		return "Tôi nhận được yêu cầu liên quan đến giao dịch tài chính. " +
+			"Với các thông tin như số tài khoản, tôi chỉ xử lý dữ liệu đã được mã hóa bởi gateway. " +
+			"Nếu bạn thấy token (TOK_xxx) trong câu hỏi, điều đó có nghĩa dữ liệu nhạy cảm đã được bảo vệ."
+	}
+
+	// Contract / legal
+	if strings.Contains(lower, "hợp đồng") || strings.Contains(lower, "pháp lý") {
+		return "Tôi có thể hỗ trợ soạn thảo và xem xét hợp đồng. " +
+			"Lưu ý quan trọng: thông tin cá nhân các bên (CCCD, SĐT, địa chỉ) sẽ được Legit Flow " +
+			"mã hóa/ẩn trước khi tôi xử lý, đảm bảo tuân thủ quy định bảo mật dữ liệu."
+	}
+
+	// Medical / health records
+	if strings.Contains(lower, "bệnh án") || strings.Contains(lower, "y tế") || strings.Contains(lower, "bệnh nhân") {
+		return "Yêu cầu liên quan đến hồ sơ y tế đã được nhận. " +
+			"Theo quy định, tất cả thông tin nhận dạng bệnh nhân (tên, CCCD, SĐT) " +
+			"phải được mã hóa trước khi gửi tới hệ thống AI. " +
+			"Legit Flow đảm bảo dữ liệu y tế nhạy cảm không bị lộ ra ngoài."
+	}
+
+	// Tool / export requests
+	if strings.Contains(lower, "export") || strings.Contains(lower, "xuất") || strings.Contains(lower, "csv") {
+		return "Yêu cầu export dữ liệu cần được kiểm tra quyền truy cập qua Tool Guard. " +
+			"Nếu bạn là admin, vui lòng sử dụng endpoint /api/v1/tool/check với header X-Tool-Name " +
+			"để xác minh quyền trước khi thực hiện export."
+	}
+
+	// Email / communication
+	if strings.Contains(lower, "email") || strings.Contains(lower, "gửi mail") || strings.Contains(lower, "liên hệ") {
+		return "Tôi nhận được yêu cầu liên quan đến thông tin liên hệ. " +
+			"Lưu ý: địa chỉ email ​​và SĐT đã được mã hóa bởi Legit Flow. " +
+			"Tôi sẽ xử lý dựa trên token, không thấy thông tin gốc."
+	}
+
+	// Default: acknowledge what was received
+	return fmt.Sprintf(
+		"Tôi đã nhận được tin nhắn của bạn và xử lý thành công. "+
+			"Nội dung nhận được: «%s». "+
+			"Nếu có dữ liệu nhạy cảm, Legit Flow Gateway đã xử lý trước khi tới tôi.",
+		truncate(prompt, 100),
+	)
 }
 
 func shouldForceSensitiveResponse(prompt string) bool {
 	lower := strings.ToLower(prompt)
 	return strings.Contains(lower, "kiểm thử streaming output guard") ||
 		strings.Contains(lower, "kiem thu streaming output guard") ||
-		strings.Contains(lower, "simulate sensitive streaming leak")
+		strings.Contains(lower, "simulate sensitive") ||
+		strings.Contains(lower, "mô phỏng") && strings.Contains(lower, "nhạy cảm")
+}
+
+func containsTokens(text string) bool {
+	return strings.Contains(text, "TOK_") || strings.Contains(text, "PSEUDO-")
+}
+
+func countTokens(text string) int {
+	count := 0
+	count += strings.Count(text, "TOK_")
+	count += strings.Count(text, "PSEUDO-")
+	return count
+}
+
+func truncate(s string, max int) string {
+	runes := []rune(s)
+	if len(runes) <= max {
+		return s
+	}
+	return string(runes[:max]) + "..."
 }
 
 func envOr(key, fallback string) string {

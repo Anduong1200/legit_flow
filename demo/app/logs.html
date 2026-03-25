@@ -1,404 +1,724 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legit Flow — Audit Logs Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0a0e1a;
-      --bg-card: #111628;
-      --bg-input: #161c30;
-      --surface: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.07);
-      --text: #e2e8f0;
-      --text-muted: #64748b;
-      --text-dim: #475569;
-      --primary: #6366f1;
-      --green: #10b981;
-      --green-soft: rgba(16,185,129,0.12);
-      --amber: #f59e0b;
-      --amber-soft: rgba(245,158,11,0.12);
-      --red: #ef4444;
-      --red-soft: rgba(239,68,68,0.12);
-      --cyan: #06b6d4;
-      --cyan-soft: rgba(6,182,212,0.12);
-      --blue: #3b82f6;
-      --blue-soft: rgba(59,130,246,0.12);
-      --radius: 12px;
-      --radius-lg: 16px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg); color: var(--text); line-height: 1.5;
-      min-height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legit Flow — Audit Logs Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --bg-card: #111628;
+            --bg-input: #161c30;
+            --surface: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.07);
+            --text: #e2e8f0;
+            --text-muted: #64748b;
+            --text-dim: #475569;
+            --primary: #6366f1;
+            --green: #10b981;
+            --green-soft: rgba(16, 185, 129, 0.12);
+            --amber: #f59e0b;
+            --amber-soft: rgba(245, 158, 11, 0.12);
+            --red: #ef4444;
+            --red-soft: rgba(239, 68, 68, 0.12);
+            --cyan: #06b6d4;
+            --cyan-soft: rgba(6, 182, 212, 0.12);
+            --blue: #3b82f6;
+            --blue-soft: rgba(59, 130, 246, 0.12);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
 
-    /* Top bar */
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 28px; border-bottom: 1px solid var(--border);
-      background: var(--bg-card);
-    }
-    .topbar-brand { display: flex; align-items: center; gap: 12px; }
-    .topbar-brand .icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, #6366f1, #3b82f6);
-      display: grid; place-items: center; font-size: 1rem; color: #fff;
-    }
-    .topbar-brand h1 { font-size: 1rem; font-weight: 700; }
-    .topbar-brand span { font-size: 0.78rem; color: var(--text-muted); margin-left: 8px; }
-    .topbar-actions { display: flex; gap: 8px; align-items: center; }
-    .topbar-btn {
-      padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border);
-      background: transparent; color: var(--text-muted); font: inherit; font-size: 0.8rem;
-      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-      transition: background .15s, color .15s;
-    }
-    .topbar-btn:hover { background: var(--surface); color: var(--text); }
-    .refresh-badge {
-      padding: 4px 10px; border-radius: 99px; font-size: 0.7rem;
-      font-weight: 600; background: var(--green-soft); color: var(--green);
-      display: inline-flex; align-items: center; gap: 4px;
-    }
-    .refresh-badge.off { background: var(--surface); color: var(--text-dim); }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* Content */
-    .content { max-width: 1400px; margin: 0 auto; padding: 20px 28px; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
 
-    /* Stats */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 18px 20px;
-      position: relative; overflow: hidden;
-    }
-    .stat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 3px; border-radius: 3px 3px 0 0;
-    }
-    .stat-card.total::before { background: var(--primary); }
-    .stat-card.blocked::before { background: var(--red); }
-    .stat-card.tokenized::before { background: var(--cyan); }
-    .stat-card.allowed::before { background: var(--green); }
-    .stat-card.transforms::before { background: var(--amber); }
-    .stat-label {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
-    }
-    .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
-    .stat-card.total .stat-value { color: var(--primary); }
-    .stat-card.blocked .stat-value { color: var(--red); }
-    .stat-card.tokenized .stat-value { color: var(--cyan); }
-    .stat-card.allowed .stat-value { color: var(--green); }
-    .stat-card.transforms .stat-value { color: var(--amber); }
-    .stat-detail { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+        /* Top bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
 
-    /* Filters */
-    .filter-bar {
-      display: flex; gap: 8px; align-items: center; margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .filter-label { font-size: 0.75rem; color: var(--text-dim); font-weight: 600; }
-    .filter-btn {
-      padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border);
-      background: transparent; color: var(--text-muted); font: inherit;
-      font-size: 0.75rem; font-weight: 600; cursor: pointer;
-      transition: all .15s;
-    }
-    .filter-btn:hover { background: var(--surface); }
-    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    /* Tabs */
-    .tab-bar {
-      display: flex; gap: 2px; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 3px; margin-bottom: 16px;
-      width: fit-content;
-    }
-    .tab-btn {
-      padding: 8px 20px; border: none; border-radius: 10px;
-      background: transparent; color: var(--text-muted);
-      font: inherit; font-size: 0.82rem; font-weight: 600;
-      cursor: pointer; transition: all .15s;
-    }
-    .tab-btn.active { background: var(--primary); color: #fff; }
-    .tab-btn:hover:not(.active) { background: var(--surface); }
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+        .topbar-brand .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            display: grid;
+            place-items: center;
+            font-size: 1rem;
+            color: #fff;
+        }
 
-    /* Tables */
-    .table-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px 16px; text-align: left; font-size: 0.8rem; border-bottom: 1px solid var(--border); }
-    th { background: rgba(255,255,255,0.02); color: var(--text-dim); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.015); }
+        .topbar-brand h1 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
 
-    /* Badges */
-    .badge {
-      display: inline-flex; padding: 3px 8px; border-radius: 4px;
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-    }
-    .badge.block, .badge.blocked, .badge.redact { background: var(--red-soft); color: #fca5a5; }
-    .badge.mask { background: var(--amber-soft); color: #fcd34d; }
-    .badge.tokenize, .badge.pseudonymize { background: var(--cyan-soft); color: #67e8f9; }
-    .badge.allow, .badge.allowed { background: var(--green-soft); color: #6ee7b7; }
-    .badge.transformed { background: var(--amber-soft); color: #fcd34d; }
-    .badge.tier-restricted { background: var(--red-soft); color: #fca5a5; }
-    .badge.tier-confidential { background: var(--amber-soft); color: #fcd34d; }
+        .topbar-brand span {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
 
-    .det-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-    .det-chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 8px; border-radius: 4px; font-size: 0.7rem;
-      font-weight: 600;
-    }
-    .det-chip.restricted { background: var(--red-soft); color: #fca5a5; }
-    .det-chip.confidential { background: var(--amber-soft); color: #fcd34d; }
-    .det-chip .count { opacity: 0.7; }
+        .topbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
 
-    .mono { font-family: 'Courier New', monospace; color: var(--text-dim); font-size: 0.72rem; }
-    .latency { font-family: 'Courier New', monospace; font-size: 0.75rem; }
-    .latency.fast { color: var(--green); }
-    .latency.medium { color: var(--amber); }
-    .latency.slow { color: var(--red); }
+        .topbar-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background .15s, color .15s;
+        }
 
-    .redacted-box {
-      background: rgba(0,0,0,0.35); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 14px;
-      font-family: 'Courier New', monospace; font-size: 0.75rem;
-      line-height: 1.6; white-space: pre-wrap; word-break: break-word;
-      max-height: 100px; overflow-y: auto; color: #cbd5e1;
-    }
-    .transform-chip {
-      display: inline-flex; align-items: center; gap: 4px; margin: 2px;
-      padding: 3px 8px; border-radius: 4px; font-size: 0.68rem;
-      font-weight: 600; font-family: 'Courier New', monospace;
-    }
-    .transform-chip.tokenize, .transform-chip.pseudonymize { background: var(--cyan-soft); color: #67e8f9; }
-    .transform-chip.mask { background: var(--amber-soft); color: #fcd34d; }
-    .transform-chip.block, .transform-chip.redact { background: var(--red-soft); color: #fca5a5; }
+        .topbar-btn:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
 
-    .empty-msg { text-align: center; color: var(--text-dim); padding: 40px; font-size: 0.85rem; }
+        .refresh-badge {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--green-soft);
+            color: var(--green);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-  </style>
+        .refresh-badge.off {
+            background: var(--surface);
+            color: var(--text-dim);
+        }
+
+        /* Content */
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 28px;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .stat-card.total::before {
+            background: var(--primary);
+        }
+
+        .stat-card.blocked::before {
+            background: var(--red);
+        }
+
+        .stat-card.tokenized::before {
+            background: var(--cyan);
+        }
+
+        .stat-card.allowed::before {
+            background: var(--green);
+        }
+
+        .stat-card.transforms::before {
+            background: var(--amber);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .stat-card.total .stat-value {
+            color: var(--primary);
+        }
+
+        .stat-card.blocked .stat-value {
+            color: var(--red);
+        }
+
+        .stat-card.tokenized .stat-value {
+            color: var(--cyan);
+        }
+
+        .stat-card.allowed .stat-value {
+            color: var(--green);
+        }
+
+        .stat-card.transforms .stat-value {
+            color: var(--amber);
+        }
+
+        .stat-detail {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Filters */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .filter-btn:hover {
+            background: var(--surface);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 3px;
+            margin-bottom: 16px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--surface);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Tables */
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-dim);
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.block,
+        .badge.blocked,
+        .badge.redact {
+            background: var(--red-soft);
+            color: #fca5a5;
+        }
+
+        .badge.mask {
+            background: var(--amber-soft);
+            color: #fcd34d;
+        }
+
+        .badge.tokenize,
+        .badge.pseudonymize {
+            background: var(--cyan-soft);
+            color: #67e8f9;
+        }
+
+        .badge.allow,
+        .badge.allowed {
+            background: var(--green-soft);
+            color: #6ee7b7;
+        }
+
+        .badge.transformed {
+            background: var(--amber-soft);
+            color: #fcd34d;
+        }
+
+        .badge.tier-restricted {
+            background: var(--red-soft);
+            color: #fca5a5;
+        }
+
+        .badge.tier-confidential {
+            background: var(--amber-soft);
+            color: #fcd34d;
+        }
+
+        .det-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .det-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .det-chip.restricted {
+            background: var(--red-soft);
+            color: #fca5a5;
+        }
+
+        .det-chip.confidential {
+            background: var(--amber-soft);
+            color: #fcd34d;
+        }
+
+        .det-chip .count {
+            opacity: 0.7;
+        }
+
+        .mono {
+            font-family: 'Courier New', monospace;
+            color: var(--text-dim);
+            font-size: 0.72rem;
+        }
+
+        .latency {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .latency.fast {
+            color: var(--green);
+        }
+
+        .latency.medium {
+            color: var(--amber);
+        }
+
+        .latency.slow {
+            color: var(--red);
+        }
+
+        .redacted-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 100px;
+            overflow-y: auto;
+            color: #cbd5e1;
+        }
+
+        .transform-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .transform-chip.tokenize,
+        .transform-chip.pseudonymize {
+            background: var(--cyan-soft);
+            color: #67e8f9;
+        }
+
+        .transform-chip.mask {
+            background: var(--amber-soft);
+            color: #fcd34d;
+        }
+
+        .transform-chip.block,
+        .transform-chip.redact {
+            background: var(--red-soft);
+            color: #fca5a5;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 40px;
+            font-size: 0.85rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+    </style>
 </head>
+
 <body>
 
-<header class="topbar">
-  <div class="topbar-brand">
-    <div class="icon">🛡️</div>
-    <h1>Audit Logs Dashboard</h1>
-    <span>Real-time Security Event Monitoring</span>
-  </div>
-  <div class="topbar-actions">
-    <span class="refresh-badge" id="refreshBadge">● Auto-refresh: 5s</span>
-    <button class="topbar-btn" id="toggleRefresh" onclick="toggleAutoRefresh()">⏸ Pause</button>
-    <button class="topbar-btn" onclick="loadLogs()">🔄 Refresh</button>
-    <a href="/" class="topbar-btn">💬 Quay lại Chat</a>
-  </div>
-</header>
+    <header class="topbar">
+        <div class="topbar-brand">
+            <div class="icon">🛡️</div>
+            <h1>Audit Logs Dashboard</h1>
+            <span>Real-time Security Event Monitoring</span>
+        </div>
+        <div class="topbar-actions">
+            <span class="refresh-badge" id="refreshBadge">● Auto-refresh: 5s</span>
+            <button class="topbar-btn" id="toggleRefresh" onclick="toggleAutoRefresh()">⏸ Pause</button>
+            <button class="topbar-btn" onclick="loadLogs()">🔄 Refresh</button>
+            <a href="/" class="topbar-btn">💬 Quay lại Chat</a>
+        </div>
+    </header>
 
-<div class="content">
-  <!-- Stats -->
-  <div class="stats-grid">
-    <div class="stat-card total">
-      <div class="stat-label">Tổng sự kiện</div>
-      <div class="stat-value" id="totalCount">-</div>
-      <div class="stat-detail">Tier 1 events</div>
+    <div class="content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-label">Tổng sự kiện</div>
+                <div class="stat-value" id="totalCount">-</div>
+                <div class="stat-detail">Tier 1 events</div>
+            </div>
+            <div class="stat-card blocked">
+                <div class="stat-label">Bị chặn</div>
+                <div class="stat-value" id="blockedCount">0</div>
+                <div class="stat-detail">Restricted / Block</div>
+            </div>
+            <div class="stat-card tokenized">
+                <div class="stat-label">Tokenized</div>
+                <div class="stat-value" id="tokenizedCount">0</div>
+                <div class="stat-detail">Mã hóa reversible</div>
+            </div>
+            <div class="stat-card allowed">
+                <div class="stat-label">Cho phép</div>
+                <div class="stat-value" id="allowedCount">0</div>
+                <div class="stat-detail">Clean / Allow</div>
+            </div>
+            <div class="stat-card transforms">
+                <div class="stat-label">Transforms</div>
+                <div class="stat-value" id="txCount">0</div>
+                <div class="stat-detail">Tier 2 records</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <span class="filter-label">Filter:</span>
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Tất cả</button>
+            <button class="filter-btn" data-filter="blocked" onclick="setFilter('blocked')">🚫 Blocked</button>
+            <button class="filter-btn" data-filter="transformed" onclick="setFilter('transformed')">🔄
+                Transformed</button>
+            <button class="filter-btn" data-filter="allowed" onclick="setFilter('allowed')">✅ Allowed</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="tier1" onclick="switchTab('tier1')">📋 Tier 1 — Metadata</button>
+            <button class="tab-btn" data-tab="tier2" onclick="switchTab('tier2')">🔒 Tier 2 — Sanitized Content</button>
+        </div>
+
+        <!-- Tier 1 -->
+        <div id="tier1Pane" class="tab-pane active">
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>User</th>
+                            <th>Request ID</th>
+                            <th>Detections</th>
+                            <th>Outcome</th>
+                            <th>Action</th>
+                            <th>Latency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tier1Body">
+                        <tr>
+                            <td colspan="7" class="empty-msg">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tier 2 -->
+        <div id="tier2Pane" class="tab-pane">
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event ID</th>
+                            <th style="width:45%">Sanitized Input</th>
+                            <th>Transforms</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tier2Body">
+                        <tr>
+                            <td colspan="3" class="empty-msg">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="stat-card blocked">
-      <div class="stat-label">Bị chặn</div>
-      <div class="stat-value" id="blockedCount">0</div>
-      <div class="stat-detail">Restricted / Block</div>
-    </div>
-    <div class="stat-card tokenized">
-      <div class="stat-label">Tokenized</div>
-      <div class="stat-value" id="tokenizedCount">0</div>
-      <div class="stat-detail">Mã hóa reversible</div>
-    </div>
-    <div class="stat-card allowed">
-      <div class="stat-label">Cho phép</div>
-      <div class="stat-value" id="allowedCount">0</div>
-      <div class="stat-detail">Clean / Allow</div>
-    </div>
-    <div class="stat-card transforms">
-      <div class="stat-label">Transforms</div>
-      <div class="stat-value" id="txCount">0</div>
-      <div class="stat-detail">Tier 2 records</div>
-    </div>
-  </div>
 
-  <!-- Filters -->
-  <div class="filter-bar">
-    <span class="filter-label">Filter:</span>
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Tất cả</button>
-    <button class="filter-btn" data-filter="blocked" onclick="setFilter('blocked')">🚫 Blocked</button>
-    <button class="filter-btn" data-filter="transformed" onclick="setFilter('transformed')">🔄 Transformed</button>
-    <button class="filter-btn" data-filter="allowed" onclick="setFilter('allowed')">✅ Allowed</button>
-  </div>
+    <script>
+        let autoRefresh = true;
+        let refreshTimer = null;
+        let currentFilter = 'all';
+        let allTier1 = [];
 
-  <!-- Tabs -->
-  <div class="tab-bar">
-    <button class="tab-btn active" data-tab="tier1" onclick="switchTab('tier1')">📋 Tier 1 — Metadata</button>
-    <button class="tab-btn" data-tab="tier2" onclick="switchTab('tier2')">🔒 Tier 2 — Sanitized Content</button>
-  </div>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tab + 'Pane').classList.add('active');
+        }
 
-  <!-- Tier 1 -->
-  <div id="tier1Pane" class="tab-pane active">
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Thời gian</th>
-            <th>User</th>
-            <th>Request ID</th>
-            <th>Detections</th>
-            <th>Outcome</th>
-            <th>Action</th>
-            <th>Latency</th>
-          </tr>
-        </thead>
-        <tbody id="tier1Body">
-          <tr><td colspan="7" class="empty-msg">Đang tải dữ liệu...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+            renderTier1(allTier1);
+        }
 
-  <!-- Tier 2 -->
-  <div id="tier2Pane" class="tab-pane">
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Event ID</th>
-            <th style="width:45%">Sanitized Input</th>
-            <th>Transforms</th>
-          </tr>
-        </thead>
-        <tbody id="tier2Body">
-          <tr><td colspan="3" class="empty-msg">Đang tải dữ liệu...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const badge = document.getElementById('refreshBadge');
+            const btn = document.getElementById('toggleRefresh');
+            if (autoRefresh) {
+                badge.textContent = '● Auto-refresh: 5s';
+                badge.className = 'refresh-badge';
+                btn.textContent = '⏸ Pause';
+                startAutoRefresh();
+            } else {
+                badge.textContent = '○ Paused';
+                badge.className = 'refresh-badge off';
+                btn.textContent = '▶ Resume';
+                if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+            }
+        }
 
-<script>
-  let autoRefresh = true;
-  let refreshTimer = null;
-  let currentFilter = 'all';
-  let allTier1 = [];
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(loadLogs, 5000);
+        }
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.getElementById(tab + 'Pane').classList.add('active');
-  }
+        async function loadLogs() {
+            try {
+                const res = await fetch('/api/logs');
+                const data = await res.json();
+                allTier1 = data.tier1 || [];
+                const tier2 = data.tier2 || [];
 
-  function setFilter(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
-    renderTier1(allTier1);
-  }
+                // Stats
+                document.getElementById('totalCount').textContent = allTier1.length;
+                let blocked = 0, tokenized = 0, allowed = 0;
+                allTier1.forEach(l => {
+                    if (l.outcome === 'blocked') blocked++;
+                    else if (l.outcome === 'transformed') tokenized++;
+                    else allowed++;
+                });
+                document.getElementById('blockedCount').textContent = blocked;
+                document.getElementById('tokenizedCount').textContent = tokenized;
+                document.getElementById('allowedCount').textContent = allowed;
 
-  function toggleAutoRefresh() {
-    autoRefresh = !autoRefresh;
-    const badge = document.getElementById('refreshBadge');
-    const btn = document.getElementById('toggleRefresh');
-    if (autoRefresh) {
-      badge.textContent = '● Auto-refresh: 5s';
-      badge.className = 'refresh-badge';
-      btn.textContent = '⏸ Pause';
-      startAutoRefresh();
-    } else {
-      badge.textContent = '○ Paused';
-      badge.className = 'refresh-badge off';
-      btn.textContent = '▶ Resume';
-      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
-    }
-  }
+                let txTotal = 0;
+                tier2.forEach(e => { txTotal += (e.transforms || []).length; });
+                document.getElementById('txCount').textContent = tier2.length;
 
-  function startAutoRefresh() {
-    if (refreshTimer) clearInterval(refreshTimer);
-    refreshTimer = setInterval(loadLogs, 5000);
-  }
+                renderTier1(allTier1);
+                renderTier2(tier2);
+            } catch (e) {
+                document.getElementById('tier1Body').innerHTML = '<tr><td colspan="7" class="empty-msg" style="color:var(--red)">Lỗi kết nối API</td></tr>';
+            }
+        }
 
-  async function loadLogs() {
-    try {
-      const res = await fetch('/api/logs');
-      const data = await res.json();
-      allTier1 = data.tier1 || [];
-      const tier2 = data.tier2 || [];
+        function renderTier1(logs) {
+            const tbody = document.getElementById('tier1Body');
+            let filtered = logs;
+            if (currentFilter !== 'all') {
+                filtered = logs.filter(l => l.outcome === currentFilter);
+            }
 
-      // Stats
-      document.getElementById('totalCount').textContent = allTier1.length;
-      let blocked = 0, tokenized = 0, allowed = 0;
-      allTier1.forEach(l => {
-        if (l.outcome === 'blocked') blocked++;
-        else if (l.outcome === 'transformed') tokenized++;
-        else allowed++;
-      });
-      document.getElementById('blockedCount').textContent = blocked;
-      document.getElementById('tokenizedCount').textContent = tokenized;
-      document.getElementById('allowedCount').textContent = allowed;
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Không có dữ liệu.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            filtered.forEach(log => {
+                const tr = document.createElement('tr');
 
-      let txTotal = 0;
-      tier2.forEach(e => { txTotal += (e.transforms || []).length; });
-      document.getElementById('txCount').textContent = tier2.length;
+                // Detections chips
+                let detsHtml = '<span style="color:var(--text-dim)">—</span>';
+                if (log.detections && log.detections.length) {
+                    detsHtml = '<div class="det-chips">' + log.detections.map(d =>
+                        `<span class="det-chip ${d.tier}">${d.type} <span class="count">×${d.count}</span></span>`
+                    ).join('') + '</div>';
+                }
 
-      renderTier1(allTier1);
-      renderTier2(tier2);
-    } catch(e) {
-      document.getElementById('tier1Body').innerHTML = '<tr><td colspan="7" class="empty-msg" style="color:var(--red)">Lỗi kết nối API</td></tr>';
-    }
-  }
+                // Latency
+                const ms = log.latency_ms || 0;
+                const latencyClass = ms < 10 ? 'fast' : ms < 100 ? 'medium' : 'slow';
 
-  function renderTier1(logs) {
-    const tbody = document.getElementById('tier1Body');
-    let filtered = logs;
-    if (currentFilter !== 'all') {
-      filtered = logs.filter(l => l.outcome === currentFilter);
-    }
+                // Outcome badge
+                const outcomeBadge = log.outcome === 'blocked' ? 'blocked' : log.outcome === 'transformed' ? 'transformed' : 'allowed';
 
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Không có dữ liệu.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = '';
-    filtered.forEach(log => {
-      const tr = document.createElement('tr');
-
-      // Detections chips
-      let detsHtml = '<span style="color:var(--text-dim)">—</span>';
-      if (log.detections && log.detections.length) {
-        detsHtml = '<div class="det-chips">' + log.detections.map(d =>
-          `<span class="det-chip ${d.tier}">${d.type} <span class="count">×${d.count}</span></span>`
-        ).join('') + '</div>';
-      }
-
-      // Latency
-      const ms = log.latency_ms || 0;
-      const latencyClass = ms < 10 ? 'fast' : ms < 100 ? 'medium' : 'slow';
-
-      // Outcome badge
-      const outcomeBadge = log.outcome === 'blocked' ? 'blocked' : log.outcome === 'transformed' ? 'transformed' : 'allowed';
-
-      tr.innerHTML = `
+                tr.innerHTML = `
         <td class="mono" style="white-space:nowrap">${log.timestamp ? new Date(log.timestamp).toLocaleString('vi-VN') : '-'}</td>
         <td style="font-weight:600">${log.user_id || 'System'}</td>
         <td class="mono">${(log.request_id || '').substring(0, 8)}…</td>
@@ -407,55 +727,56 @@
         <td><span class="badge ${log.action}">${log.action || '-'}</span></td>
         <td><span class="latency ${latencyClass}">${ms}ms</span></td>
       `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderTier2(logs) {
-    const tbody = document.getElementById('tier2Body');
-    if (!logs.length) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty-msg">Không có dữ liệu Tier 2.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = '';
-    logs.forEach(log => {
-      const tr = document.createElement('tr');
-
-      // Parse redacted_input
-      let displayInput = log.redacted_input || '';
-      try {
-        const parsed = JSON.parse(displayInput);
-        if (parsed.messages && parsed.messages.length) {
-          displayInput = parsed.messages.map(m => m.content).join('\n');
+                tbody.appendChild(tr);
+            });
         }
-      } catch(e) {}
 
-      // Transforms
-      let txHtml = '<span style="color:var(--text-dim)">—</span>';
-      if (log.transforms && log.transforms.length) {
-        txHtml = log.transforms.map(t =>
-          `<span class="transform-chip ${t.action || 'mask'}"><strong>${t.type}</strong> → ${t.replacement}</span>`
-        ).join(' ');
-      }
+        function renderTier2(logs) {
+            const tbody = document.getElementById('tier2Body');
+            if (!logs.length) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-msg">Không có dữ liệu Tier 2.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
 
-      tr.innerHTML = `
+                // Parse redacted_input
+                let displayInput = log.redacted_input || '';
+                try {
+                    const parsed = JSON.parse(displayInput);
+                    if (parsed.messages && parsed.messages.length) {
+                        displayInput = parsed.messages.map(m => m.content).join('\n');
+                    }
+                } catch (e) { }
+
+                // Transforms
+                let txHtml = '<span style="color:var(--text-dim)">—</span>';
+                if (log.transforms && log.transforms.length) {
+                    txHtml = log.transforms.map(t =>
+                        `<span class="transform-chip ${t.action || 'mask'}"><strong>${t.type}</strong> → ${t.replacement}</span>`
+                    ).join(' ');
+                }
+
+                tr.innerHTML = `
         <td class="mono">${(log.event_id || '').substring(0, 8)}…</td>
         <td><div class="redacted-box">${escapeHtml(displayInput)}</div></td>
         <td>${txHtml}</td>
       `;
-      tbody.appendChild(tr);
-    });
-  }
+                tbody.appendChild(tr);
+            });
+        }
 
-  function escapeHtml(text) {
-    const d = document.createElement('div');
-    d.textContent = text;
-    return d.innerHTML;
-  }
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
 
-  // Init
-  loadLogs();
-  startAutoRefresh();
-</script>
+        // Init
+        loadLogs();
+        startAutoRefresh();
+    </script>
 </body>
+
 </html>
