@@ -1,48 +1,51 @@
 # Legit Flow — Default Policy
-# This is the production-hardened default policy.
-# Risk tier determines the default action for each detection.
+# Production-hardened policy demonstrating all action types:
+#   - tokenize: reversible encryption (TOK_xxx) — for data needing round-trip
+#   - mask: partial hiding (079***67) — for semi-visible fields
+#   - block: full replacement ([BLOCKED]) — for secrets that must never reach LLM
+#   - redact: full replacement ([REDACTED]) — alternative label for blocking
 
 version: "1.0.0"
 name: "default-hardened"
-description: "Default policy — block restricted, mask confidential, allow internal/public"
+description: "Tiered policy — tokenize CCCD/bank, mask phone/email, block secrets"
 
 defaults:
-  restricted: tokenize       # CCCD, bank accounts, secrets → tokenize (round-trip encryption)
-  confidential: tokenize     # phone, email → tokenize
+  restricted: tokenize       # CCCD, bank accounts → tokenize (round-trip encryption)
+  confidential: mask         # phone, email → partial masking (079***67)
   internal: allow            # contextual flags → passthrough (log only)
   public: allow              # clean content → passthrough
 
 rules:
   - name: tokenize-citizen-id
-    description: "Tokenize (Encrypt) Vietnamese CCCD (Căn cước công dân)"
+    description: "Tokenize (Encrypt) Vietnamese CCCD — reversible for de-tokenization"
     detection_types: [CCCD]
     tier: restricted
     action: tokenize
     enabled: true
 
-  - name: tokenize-secrets
-    description: "Tokenize JWT tokens, API keys, and other secrets"
+  - name: block-secrets
+    description: "Block JWT tokens and API keys — never send to LLM"
     detection_types: [JWT, API_KEY]
     tier: restricted
-    action: tokenize
+    action: block
     enabled: true
 
-  - name: tokenize-phone
-    description: "Tokenize Vietnamese phone numbers"
+  - name: mask-phone
+    description: "Mask Vietnamese phone numbers — partial hide: 090***67"
     detection_types: [PHONE_VN]
     tier: confidential
-    action: tokenize
+    action: mask
     enabled: true
 
-  - name: tokenize-email
-    description: "Tokenize email addresses"
+  - name: mask-email
+    description: "Mask email addresses — partial hide: ngu***vn"
     detection_types: [EMAIL]
     tier: confidential
-    action: tokenize
+    action: mask
     enabled: true
 
   - name: tokenize-bank-account
-    description: "Tokenize bank account numbers"
+    description: "Tokenize bank account numbers — reversible for reconciliation"
     detection_types: [BANK_ACCOUNT]
     tier: restricted
     action: tokenize

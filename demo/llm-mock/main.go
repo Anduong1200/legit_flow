@@ -111,16 +111,33 @@ func generateResponse(prompt string) string {
 			"- Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 	}
 
-	// ── Check if prompt contains tokens (TOK_xxx) → LLM only saw sanitized data ──
-	if containsTokens(prompt) {
-		tokCount := countTokens(prompt)
-		return fmt.Sprintf(
-			"Tôi nhận được tin nhắn của bạn, nhưng phát hiện %d mã token thay vì dữ liệu gốc. "+
-				"Điều này cho thấy Legit Flow Gateway đã mã hóa dữ liệu nhạy cảm trước khi gửi tới tôi. "+
-				"Tôi không thể đọc được nội dung gốc — chỉ thấy mã token (ví dụ: TOK_xxx). "+
-				"Dữ liệu của bạn đã được bảo vệ thành công.",
-			tokCount,
-		)
+	// ── Detect all protection types applied by gateway ──
+	tokCount := countTokens(prompt)
+	maskCount := strings.Count(prompt, "***")
+	hasBlocked := strings.Contains(prompt, "[BLOCKED]")
+	hasRedacted := strings.Contains(prompt, "[REDACTED]")
+	blockedCount := strings.Count(prompt, "[BLOCKED]") + strings.Count(prompt, "[REDACTED]")
+
+	// Build multi-action response if any protection detected
+	if tokCount > 0 || maskCount > 0 || hasBlocked || hasRedacted {
+		var parts []string
+		parts = append(parts, "📊 Báo cáo bảo mật Legit Flow Gateway:\n")
+
+		if tokCount > 0 {
+			parts = append(parts, fmt.Sprintf("  🔐 Tokenized: %d trường — dữ liệu được mã hóa reversible (TOK_xxx), tôi không thể đọc nội dung gốc.", tokCount))
+		}
+		if maskCount > 0 {
+			parts = append(parts, fmt.Sprintf("  🎭 Masked: %d trường — dữ liệu được ẩn một phần (ví dụ: 079***67), tôi chỉ thấy phần đầu và cuối.", maskCount))
+		}
+		if hasBlocked || hasRedacted {
+			parts = append(parts, fmt.Sprintf("  🚫 Blocked: %d trường — nội dung bị chặn hoàn toàn, tôi chỉ thấy [BLOCKED].", blockedCount))
+		}
+
+		total := tokCount + maskCount + blockedCount
+		parts = append(parts, fmt.Sprintf("\n→ Tổng cộng %d trường dữ liệu nhạy cảm đã được bảo vệ trước khi gửi tới tôi.", total))
+		parts = append(parts, "→ Dữ liệu gốc không bao giờ rời khỏi hệ thống của bạn.")
+
+		return strings.Join(parts, "\n")
 	}
 
 	// ── Check if prompt contains [BLOCKED] or [REDACTED] markers ──

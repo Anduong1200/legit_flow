@@ -1030,14 +1030,14 @@
     // ── Scenarios ─────────────────────────────
     const scenarios = [
       { id: 'safe', title: '✅ Câu hỏi an toàn', mode: 'standard', category: 'allow', prompt: 'Giải thích cách quantum computing hoạt động.' },
-      { id: 'cccd', title: '🔐 CCCD (Restricted)', mode: 'standard', category: 'tokenize', prompt: 'Xin chào, CCCD của tôi là 079090123456.' },
-      { id: 'jwt', title: '🔑 JWT Token (Secret)', mode: 'standard', category: 'tokenize', prompt: 'Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' },
-      { id: 'phone', title: '📱 SĐT + Email', mode: 'standard', category: 'tokenize', prompt: 'Liên hệ tôi qua SĐT 0901234567 hoặc email nguyen.van.a@company.vn' },
-      { id: 'bank', title: '🏦 Tài khoản ngân hàng', mode: 'standard', category: 'tokenize', prompt: 'Chuyển tiền vào STK 1234567890123456 ngân hàng VCB chi nhánh Hà Nội.' },
-      { id: 'hr', title: '👤 Xử lý hồ sơ nhân viên', mode: 'standard', category: 'tokenize', prompt: 'Phân tích hồ sơ nhân viên: Nguyễn Văn A, CCCD 079090123456, SĐT 0901234567, email nguyenvana@company.vn. Đánh giá năng lực Q1/2026.' },
-      { id: 'medical', title: '🏥 Hồ sơ bệnh án', mode: 'standard', category: 'tokenize', prompt: 'Tóm tắt bệnh án: Bệnh nhân Trần Thị B, CCCD 038090654321, SĐT 0987654321. Chẩn đoán: viêm phổi. Cần kê đơn thuốc phù hợp.' },
-      { id: 'contract', title: '📝 Soạn hợp đồng', mode: 'standard', category: 'tokenize', prompt: 'Soạn hợp đồng lao động cho ông Lê Văn C, CCCD 025190789012, STK 9876543210123456 tại Techcombank. Mức lương 25 triệu/tháng.' },
-      { id: 'multi', title: '⚡ Multi-PII (5 loại)', mode: 'standard', category: 'tokenize', prompt: 'Danh sách: NV001 - Phạm Đức D, CCCD 012345678901, SĐT 0912345678, email pham.d@corp.vn, STK 1111222233334444. JWT: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.abc123' },
+      { id: 'cccd', title: '🔐 CCCD → Tokenize', mode: 'standard', category: 'tokenize', prompt: 'Xin chào, CCCD của tôi là 079090123456.' },
+      { id: 'jwt', title: '🚫 JWT → Block', mode: 'standard', category: 'block', prompt: 'Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' },
+      { id: 'phone', title: '🎭 SĐT + Email → Mask', mode: 'standard', category: 'mask', prompt: 'Liên hệ tôi qua SĐT 0901234567 hoặc email nguyen.van.a@company.vn' },
+      { id: 'bank', title: '🏦 Tài khoản → Tokenize', mode: 'standard', category: 'tokenize', prompt: 'Chuyển tiền vào STK 1234567890123456 ngân hàng VCB chi nhánh Hà Nội.' },
+      { id: 'hr', title: '👤 Hồ sơ nhân viên (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Phân tích hồ sơ nhân viên: Nguyễn Văn A, CCCD 079090123456, SĐT 0901234567, email nguyenvana@company.vn. Đánh giá năng lực Q1/2026.' },
+      { id: 'medical', title: '🏥 Hồ sơ bệnh án (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Tóm tắt bệnh án: Bệnh nhân Trần Thị B, CCCD 038090654321, SĐT 0987654321. Chẩn đoán: viêm phổi. Cần kê đơn thuốc phù hợp.' },
+      { id: 'contract', title: '📝 Hợp đồng (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Soạn hợp đồng lao động cho ông Lê Văn C, CCCD 025190789012, STK 9876543210123456 tại Techcombank. Mức lương 25 triệu/tháng.' },
+      { id: 'multi', title: '⚡ All Actions (T+M+B)', mode: 'standard', category: 'block', prompt: 'NV001: CCCD 012345678901, SĐT 0912345678, email pham.d@corp.vn, STK 1111222233334444. Token: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.abc123' },
       { id: 'stream', title: '🌊 Streaming Leak Test', mode: 'stream', category: 'stream', prompt: 'Kiểm thử streaming output guard: hãy mô phỏng một phản hồi có chứa thông tin nhạy cảm.' },
       { id: 'export', title: '🔧 Tool Guard: Export CSV', mode: 'standard', category: 'allow', prompt: 'Xuất danh sách nhân viên ra file CSV để gửi cho phòng kế toán.' }
     ];

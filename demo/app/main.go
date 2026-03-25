@@ -521,7 +521,7 @@ func (a *demoApp) handleApiLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (i *demoInspector) Inspect(ctx context.Context, text string) inspectResponse {
-	name, version, description, actionMap := i.policyContext()
+	name, version, description, _ := i.policyContext()
 
 	detections, err := i.registry.DetectAll(ctx, text)
 	if err != nil {
@@ -537,7 +537,9 @@ func (i *demoInspector) Inspect(ctx context.Context, text string) inspectRespons
 		}
 	}
 
-	sanitizedInput, applied := transformer.TransformText(text, detections, actionMap)
+	// Use rule-level resolver for accurate per-detection action display
+	resolver := i.buildResolver()
+	sanitizedInput, applied := transformer.TransformTextWithResolver(text, detections, resolver)
 	overallAction := mostRestrictiveAction(applied)
 	if overallAction == "" {
 		overallAction = transformer.ActionAllow
@@ -552,7 +554,18 @@ func (i *demoInspector) Inspect(ctx context.Context, text string) inspectRespons
 		AuditNote:             auditNote(overallAction),
 		SanitizedInput:        sanitizedInput,
 		StructuredPreviewOnly: true,
-		Detections:            summarizeDetections(detections, actionMap),
+		Detections:            summarizeDetectionsWithResolver(detections, resolver),
+	}
+}
+
+func (i *demoInspector) buildResolver() transformer.ActionResolver {
+	if i.policyEngine != nil {
+		return func(det detector.Detection) transformer.Action {
+			return i.policyEngine.Evaluate(det)
+		}
+	}
+	return func(det detector.Detection) transformer.Action {
+		return fallbackActionMap[det.Tier]
 	}
 }
 
@@ -573,10 +586,11 @@ func (i *demoInspector) policyContext() (string, string, string, map[detector.Ri
 		fallbackActionMap
 }
 
-func summarizeDetections(detections []detector.Detection, actionMap map[detector.RiskTier]transformer.Action) []detectionPreview {
+func summarizeDetectionsWithResolver(detections []detector.Detection, resolver transformer.ActionResolver) []detectionPreview {
 	counts := make(map[string]*detectionPreview)
 	for _, det := range detections {
-		key := string(det.Type) + "|" + string(det.Tier)
+		action := resolver(det)
+		key := string(det.Type) + "|" + string(action)
 		if existing, ok := counts[key]; ok {
 			existing.Count++
 			continue
@@ -585,7 +599,7 @@ func summarizeDetections(detections []detector.Detection, actionMap map[detector
 		counts[key] = &detectionPreview{
 			Type:   string(det.Type),
 			Tier:   string(det.Tier),
-			Action: string(actionMap[det.Tier]),
+			Action: string(action),
 			Count:  1,
 			Label:  detectionLabel(det.Type),
 			Detail: detectionDetail(det.Type),
