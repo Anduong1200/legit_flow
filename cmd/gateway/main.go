@@ -41,6 +41,7 @@ func main() {
 	// L1: always-on regex detectors (fast path)
 	reg.Register(detector.NewL1RegexDetector())
 
+	// L2: contextual classifier (API-based, pluggable)
 	if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
 		if l2 := detector.NewL2LLMDetector(apiKey); l2 != nil {
 			reg.Register(l2)
