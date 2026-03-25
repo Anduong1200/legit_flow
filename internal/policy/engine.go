@@ -1,4 +1,4 @@
-// Package policy implements the policy-as-code engine with hot reload.
+// Package policy implements the policy engine with rule-level evaluation and hot reload.
 package policy
 
 import (
@@ -61,7 +61,7 @@ func NewEngine(policyDir string, logger *slog.Logger) (*Engine, error) {
 	return e, nil
 }
 
-// Load reads all policy YAML files from the policy directory and merges them.
+// Load reads the first policy YAML file from the policy directory.
 func (e *Engine) Load() error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -78,7 +78,7 @@ func (e *Engine) Load() error {
 		return nil
 	}
 
-	// Load the first policy file (MVP: single active policy)
+	// Load the first policy file (single active policy)
 	data, err := os.ReadFile(files[0])
 	if err != nil {
 		return fmt.Errorf("read policy file: %w", err)
@@ -94,6 +94,7 @@ func (e *Engine) Load() error {
 		"name", p.Name,
 		"version", p.Version,
 		"rules", len(p.Rules),
+		"enabled_rules", countEnabledRules(p.Rules),
 		"file", files[0],
 	)
 	return nil
@@ -105,7 +106,52 @@ func (e *Engine) Reload() error {
 	return e.Load()
 }
 
-// GetActionMap returns the current action map for transformations.
+// Evaluate returns the action for a specific detection by matching rules first,
+// then falling back to tier defaults. This is the primary enforcement method.
+//
+// Priority:
+//  1. Enabled rule matching detection type → rule action
+//  2. Tier default → default action for that tier
+func (e *Engine) Evaluate(det detector.Detection) transformer.Action {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	// Step 1: Check enabled rules matching this detection type
+	for _, rule := range e.current.Rules {
+		if !rule.Enabled {
+			continue
+		}
+		for _, dt := range rule.DetectionTypes {
+			if dt == det.Type {
+				return rule.Action
+			}
+		}
+	}
+
+	// Step 2: Fall back to tier default
+	return e.tierDefault(det.Tier)
+}
+
+// EvaluateAll returns actions for all detections, using rule-level matching.
+// Returns a map from detection index to action.
+func (e *Engine) EvaluateAll(dets []detector.Detection) map[int]transformer.Action {
+	result := make(map[int]transformer.Action, len(dets))
+	for i, det := range dets {
+		result[i] = e.Evaluate(det)
+	}
+	return result
+}
+
+// ActionResolver returns a function suitable for TransformText.
+// This bridges the new rule-based engine with the transformer package.
+func (e *Engine) ActionResolver() func(detector.Detection) transformer.Action {
+	return func(det detector.Detection) transformer.Action {
+		return e.Evaluate(det)
+	}
+}
+
+// GetActionMap returns the tier-based action map (legacy compatibility).
+// Deprecated: Use Evaluate() or ActionResolver() for rule-level enforcement.
 func (e *Engine) GetActionMap() map[detector.RiskTier]transformer.Action {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
@@ -125,11 +171,27 @@ func (e *Engine) GetPolicy() Policy {
 	return *e.current
 }
 
+// tierDefault returns the default action for a given tier.
+func (e *Engine) tierDefault(tier detector.RiskTier) transformer.Action {
+	switch tier {
+	case detector.TierRestricted:
+		return e.current.Defaults.Restricted
+	case detector.TierConfidential:
+		return e.current.Defaults.Confidential
+	case detector.TierInternal:
+		return e.current.Defaults.Internal
+	case detector.TierPublic:
+		return e.current.Defaults.Public
+	default:
+		return transformer.ActionAllow
+	}
+}
+
 func defaultPolicy() *Policy {
 	return &Policy{
 		Version:     "1.0.0-default",
 		Name:        "default",
-		Description: "Default hardened policy",
+		Description: "Default policy — block restricted, mask confidential",
 		Defaults: DefaultActions{
 			Restricted:   transformer.ActionBlock,
 			Confidential: transformer.ActionMask,
@@ -137,4 +199,14 @@ func defaultPolicy() *Policy {
 			Public:       transformer.ActionAllow,
 		},
 	}
+}
+
+func countEnabledRules(rules []Rule) int {
+	n := 0
+	for _, r := range rules {
+		if r.Enabled {
+			n++
+		}
+	}
+	return n
 }

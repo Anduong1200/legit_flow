@@ -22,6 +22,7 @@ import (
 	"github.com/legitflow/legitflow/internal/detector"
 	"github.com/legitflow/legitflow/internal/outputguard"
 	"github.com/legitflow/legitflow/internal/policy"
+	"github.com/legitflow/legitflow/internal/toolguard"
 	"github.com/legitflow/legitflow/internal/transformer"
 )
 
@@ -32,6 +33,7 @@ type Server struct {
 	detectorReg  *detector.Registry
 	policyEngine *policy.Engine
 	auditLogger  *audit.Logger
+	toolGuard    *toolguard.Guard
 	proxy        *httputil.ReverseProxy
 	mux          *http.ServeMux
 }
@@ -43,6 +45,7 @@ func NewServer(
 	reg *detector.Registry,
 	eng *policy.Engine,
 	auditor *audit.Logger,
+	tg *toolguard.Guard,
 ) (*Server, error) {
 	target, err := url.Parse(cfg.LLMBackendURL)
 	if err != nil {
@@ -55,6 +58,7 @@ func NewServer(
 		detectorReg:  reg,
 		policyEngine: eng,
 		auditLogger:  auditor,
+		toolGuard:    tg,
 		mux:          http.NewServeMux(),
 	}
 
@@ -66,6 +70,7 @@ func NewServer(
 	s.mux.HandleFunc("/healthz", s.handleHealthz)
 	s.mux.HandleFunc("/readyz", s.handleReadyz)
 	s.mux.HandleFunc("/api/v1/policy/reload", s.handlePolicyReload)
+	s.mux.HandleFunc("/api/v1/tool/check", s.handleToolCheck)
 	s.mux.HandleFunc("/", s.handleProxy)
 
 	return s, nil
@@ -106,9 +111,9 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ── Step 3: Transform based on policy ───────────────────────
-	actionMap := s.policyEngine.GetActionMap()
-	transformedText, applied := transformer.TransformText(inputText, detections, actionMap)
+	// ── Step 3: Transform using rule-level policy evaluation ────
+	resolver := s.policyEngine.ActionResolver()
+	transformedText, applied := transformer.TransformTextWithResolver(inputText, detections, resolver)
 
 	// Inject tokens mapping for round-trip decryption
 	tokens := make(tokenMap)
@@ -120,10 +125,9 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, ctxKeyTokens, tokens)
 	r = r.WithContext(ctx)
 
-
 	// ── Step 4: Record metrics ──────────────────────────────────
 	for _, det := range detections {
-		action := actionMap[det.Tier]
+		action := s.policyEngine.Evaluate(det)
 		common.DetectionsTotal.WithLabelValues(string(det.Type), string(action)).Inc()
 	}
 
@@ -303,8 +307,8 @@ func (s *Server) modifyResponse(resp *http.Response) error {
 	}
 
 	if len(detections) > 0 {
-		actionMap := s.policyEngine.GetActionMap()
-		transformed, _ := transformer.TransformText(string(bodyBytes), detections, actionMap)
+		resolver := s.policyEngine.ActionResolver()
+		transformed, _ := transformer.TransformTextWithResolver(string(bodyBytes), detections, resolver)
 		bodyBytes = []byte(transformed)
 	}
 
@@ -318,11 +322,49 @@ func (s *Server) modifyResponse(resp *http.Response) error {
 		bodyBytes = []byte(text)
 	}
 
-
 	resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 	resp.ContentLength = int64(len(bodyBytes))
 	resp.Header.Set("Content-Length", strconv.Itoa(len(bodyBytes)))
 	return nil
+}
+
+// ── Tool Guard endpoint ─────────────────────────────────────────────────────
+
+func (s *Server) handleToolCheck(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if s.toolGuard == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"allowed":true,"reason":"tool guard not configured"}`))
+		return
+	}
+
+	toolName := r.Header.Get("X-Tool-Name")
+	userRole := r.Header.Get("X-User-Role")
+	action := r.Header.Get("X-Tool-Action")
+
+	if toolName == "" {
+		http.Error(w, `{"error":"X-Tool-Name header required"}`, http.StatusBadRequest)
+		return
+	}
+	if action == "" {
+		action = "read"
+	}
+
+	result := s.toolGuard.Check(toolguard.AccessRequest{
+		ToolName: toolName,
+		UserRole: userRole,
+		Action:   toolguard.Permission(action),
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	if !result.Allowed {
+		w.WriteHeader(http.StatusForbidden)
+	}
+	_, _ = fmt.Fprintf(w, `{"allowed":%t,"needs_approval":%t,"reason":%q}`,
+		result.Allowed, result.NeedsApproval, result.Reason)
 }
 
 // ── Health endpoints ────────────────────────────────────────────────────────

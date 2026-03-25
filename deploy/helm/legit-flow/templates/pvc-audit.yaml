@@ -1,0 +1,18 @@
+{{- if .Values.audit.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "legit-flow.fullname" . }}-audit
+  labels:
+    {{- include "legit-flow.labels" . | nindent 4 }}
+    app.kubernetes.io/component: audit-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.audit.persistence.size }}
+  {{- if .Values.audit.persistence.storageClass }}
+  storageClassName: {{ .Values.audit.persistence.storageClass | quote }}
+  {{- end }}
+{{- end }}

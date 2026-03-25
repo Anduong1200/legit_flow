@@ -1,34 +1,66 @@
-# 🛡️ Legit Flow
+# 🛡️ Legit Flow — Secure LLM Gateway Lab
 
-**AI Security Data Plane for On-Premises Kubernetes**
+**Runtime Security Demo for LLM Traffic — Structured Data Minimization, Streaming Leak Interception, and Policy-Driven Enforcement**
 
-Legit Flow intercepts, inspects, and sanitizes all traffic between enterprise applications and LLM/SLM endpoints — ensuring zero data exfiltration while preserving AI utility.
+Legit Flow is a reverse-proxy gateway that intercepts, inspects, and sanitizes traffic between enterprise applications and LLM endpoints. It demonstrates three core capabilities:
 
-## ✨ Key Features
+1. **Structured PII/secret minimization** before requests reach the LLM provider
+2. **Streaming leak interception** for real-time output scanning with holdback window
+3. **Auditable request/response decision trace** with 2-tier logging
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **L1 PII/Secret Detection** | ✅ MVP | Regex-based: VN CCCD, SĐT, email, bank accounts, JWT, API keys |
-| **L2 Contextual Classifier** | ✅ MVP | Pluggable API: OpenAI, Anthropic, or local ML endpoint |
-| **Streaming Output Guard** | ✅ MVP | Holdback window + per-chunk scan + truncate on violation |
-| **Policy-as-Code** | ✅ MVP | YAML rules, hot reload, versioned, tiered (restricted→public) |
-| **2-Tier Audit** | ✅ MVP | Tier 1 metadata (always-on) + Tier 2 redacted content |
-| **Break-Glass** | ✅ MVP | 2-person rule, ticket link, time-bound access |
-| **Tool/Action Guard** | ✅ MVP | Allowlist, RBAC, approval workflow, default deny |
-	| **Hardened K8s** | ✅ MVP | Non-root, read-only FS, NetworkPolicy, seccomp |
+> [!WARNING]
+> **Trust Boundary:** When using an external L2 classifier (OpenAI, Anthropic, Gemini), the full prompt text is sent to the external API for classification. "Zero exfiltration" is only valid in regex-only mode or with a local/on-prem classifier. See [Trust Boundary Analysis](docs/trust-boundary.md).
 
-## 🏰 Technical Architecture
+## ✨ Feature Status
 
-Legit Flow operates as a standard reverse proxy (API Gateway) intercepting HTTP requests between internal enterprise applications and external/internal LLM APIs (OpenAI, Anthropic, local vLLM). It is designed with modularity and low latency in mind.
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **L1 PII/Secret Detection** | ✅ Working | Regex-based: VN CCCD, SĐT, email, bank accounts, JWT, API keys |
+| **L2 Contextual Classifier** | ✅ Working | Pluggable API (OpenAI/Anthropic/Gemini/local) — ⚠️ external API breaks trust boundary |
+| **Streaming Output Guard** | ✅ Working | Holdback window + per-chunk scan + truncate on restricted tier violation |
+| **Policy Engine** | ✅ Working | YAML rules with detection-type matching, tier fallback, hot reload |
+| **2-Tier Audit** | ✅ Working | Tier 1 metadata (always-on) + Tier 2 redacted content |
+| **Tool/Action Guard** | 🔧 Integrated | RBAC + allowlist + approval workflow — wired into gateway with demo tools |
+| **Break-Glass** | 🔧 Validation only | Struct + validation logic present; no runtime workflow yet |
+| **Hardened K8s** | 🔧 Skeleton | Non-root, read-only FS, NetworkPolicy, seccomp — PVC template included, no mTLS |
 
-### Core Components:
-1. **Request Interceptor & Metrics Middleware:** Terminates the HTTP connection, extracts the prompt, and logs initial metrics.
+### What This Is NOT (Yet)
+
+- ❌ Not a production-grade security product
+- ❌ No prompt injection detection (direct or indirect)
+- ❌ No agent/tool chain abuse detection
+- ❌ No semantic leakage analysis beyond regex patterns
+- ❌ No benchmark for false positive/negative rates
+
+## 🏰 Architecture
+
+```
+Enterprise App → [Gateway] → LLM Provider
+                    │
+           ┌────────┼────────┐
+           │        │        │
+        L1 Regex  Policy   Output
+        L2 LLM   Engine   Guard
+           │        │        │
+         Detect  Evaluate  Scan
+           │        │      Stream
+           └────────┼────────┘
+                    │
+              Audit Logger
+              (Tier1 + Tier2)
+```
+
+### Core Components
+
+1. **Request Interceptor:** Terminates HTTP, extracts prompt, starts trace
 2. **Detector Registry:**
-   - **L1 Fast-path (Regex):** Deterministic scanning for clear formats (CCCD, Emails, Phone numbers, JWTs, API Keys). Runs in < 2ms.
-   - **L2 Contextual (LLM-based):** Semantic scanning for complex requests using a fast classifier model (e.g., `gpt-4o-mini` or local tiny LLM).
-3. **Policy-as-Code Engine:** Evaluates the detections against a YAML-defined policy array to determine the risk tier and the corresponding action (`allow`, `mask`, `block`).
-4. **Output Stream Guard:** For streaming responses (`stream: true`), this component acts as a sliding window buffer holding back tokens temporarily to perform real-time scanning. If a violation is found mid-stream, it truncates the stream and shuts the connection.
-5. **2-Tier Audit Logger:** Logs the metadata (Tier 1) for every request for observability and SIEM integration. Only authorized personnel can access the encrypted, pseudonymized payloads (Tier 2).
+   - **L1 (Regex):** Deterministic scanning for structured formats. Runs in < 2ms
+   - **L2 (LLM-based):** Optional semantic scanning via external/local classifier
+3. **Policy Engine:** Evaluates detections against YAML rules (detection_type match → tier fallback)
+4. **Transformer:** Applies actions (tokenize/mask/block/redact/pseudonymize)
+5. **Output Stream Guard:** Sliding window buffer for live output scanning
+6. **Tool Guard:** RBAC allowlist for tool/action invocations (default deny)
+7. **2-Tier Audit:** Always-on metadata (Tier 1) + redacted payloads (Tier 2)
 
 ## 🚀 Quick Start
 
@@ -45,21 +77,23 @@ go run ./demo/app
 # 4. Open http://localhost:3000
 ```
 
-### With External API Classifier (Optional)
+### L2 External Classifier (Optional — breaks trust boundary)
 
 ```bash
+# ⚠️ Prompt text will be sent to external API
 export LEGIT_CLASSIFIER_PROVIDER=openai
 export LEGIT_CLASSIFIER_API_KEY=sk-your-key-here
 export LEGIT_CLASSIFIER_MODEL=gpt-4o-mini
 go run ./cmd/gateway
 ```
 
-Swap to local model later:
+### L2 Local Classifier (Preserves trust boundary)
+
 ```bash
 export LEGIT_CLASSIFIER_PROVIDER=local
 export LEGIT_CLASSIFIER_API_URL=http://localhost:8000/v1/chat/completions
-export LEGIT_CLASSIFIER_API_KEY=local-key
 export LEGIT_CLASSIFIER_MODEL=my-classifier-v1
+go run ./cmd/gateway
 ```
 
 ## 📁 Project Structure
@@ -67,34 +101,27 @@ export LEGIT_CLASSIFIER_MODEL=my-classifier-v1
 ```
 cmd/gateway/          → Gateway entry point
 internal/
-├── gateway/          → HTTP proxy + streaming
+├── gateway/          → HTTP proxy + streaming + tool guard endpoint
 ├── detector/         → L1 regex + L2 API classifier
 ├── transformer/      → mask, pseudonymize, tokenize, block
 ├── outputguard/      → Streaming holdback + truncate
-├── audit/            → 2-tier audit + break-glass
-├── policy/           → Policy-as-code engine
-├── toolguard/        → Tool/Action access control
+├── audit/            → 2-tier audit + break-glass validation
+├── policy/           → Rule-level policy engine with hot reload
+├── toolguard/        → Tool/Action RBAC access control
 └── common/           → Config, logger, metrics
-deploy/helm/          → Helm chart (hardened K8s)
-demo/                 → Demo app + mock LLM
+deploy/helm/          → Helm chart (security-aware K8s skeleton)
+demo/                 → Enterprise chat UI + mock LLM
 policies/             → Policy YAML files
-test/                 → E2E, perf (k6), security tests
+docs/                 → Architecture, trust boundary, runbook
 ```
 
 ## 🧪 Testing
 
 ```bash
-# Unit tests
-make test
-
-# Lint
-make lint
-
-# Helm lint
-make helm-lint
-
-# Load test (requires k6)
-k6 run test/perf/k6/load_test.js
+go test ./internal/... -v -race -cover     # Unit tests
+go vet ./...                                # Static analysis
+go build ./...                              # Build verification
+helm lint deploy/helm/legit-flow            # Helm validation
 ```
 
 ## 📊 Metrics
@@ -108,10 +135,10 @@ Prometheus metrics at `:9090/metrics`:
 
 ## 📖 Documentation
 
-- [Architecture](docs/architecture.md) — System flow chart + component details
-- [Demo Runbook](docs/demo-runbook.md) — Step-by-step demo with pass/fail criteria
-- [Roadmap](docs/roadmap.md) — 4-month Gantt chart (24/02 → 30/06/2026)
+- [Architecture](docs/architecture.md) — System flow + component details
+- [Trust Boundary](docs/trust-boundary.md) — When data leaves the boundary
+- [Demo Runbook](docs/demo-runbook.md) — Step-by-step demo guide
 
 ## 📜 License
 
-Confidential — For evaluation purposes only.
+Educational / Portfolio use — For evaluation purposes only.

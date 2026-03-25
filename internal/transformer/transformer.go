@@ -27,9 +27,13 @@ type Transformer interface {
 	Transform(value string, det detector.Detection) string
 }
 
-// TransformText applies transformations to all detections in the text.
-// Returns the transformed text and a list of applied transforms.
-func TransformText(text string, detections []detector.Detection, actionMap map[detector.RiskTier]Action) (string, []AppliedTransform) {
+// ActionResolver resolves the action for a given detection.
+// This allows the policy engine to provide rule-level decisions.
+type ActionResolver func(detector.Detection) Action
+
+// TransformTextWithResolver applies transformations using a per-detection action resolver.
+// This is the primary transform path — each detection gets its action from rule matching.
+func TransformTextWithResolver(text string, detections []detector.Detection, resolver ActionResolver) (string, []AppliedTransform) {
 	if len(detections) == 0 {
 		return text, nil
 	}
@@ -39,7 +43,7 @@ func TransformText(text string, detections []detector.Detection, actionMap map[d
 	result := []byte(text)
 	for i := len(detections) - 1; i >= 0; i-- {
 		det := detections[i]
-		action := actionMap[det.Tier]
+		action := resolver(det)
 		if action == ActionAllow || action == "" {
 			continue
 		}
@@ -71,6 +75,15 @@ func TransformText(text string, detections []detector.Detection, actionMap map[d
 	}
 
 	return string(result), applied
+}
+
+// TransformText applies transformations using a tier-based action map.
+// Deprecated: Use TransformTextWithResolver for rule-level enforcement.
+func TransformText(text string, detections []detector.Detection, actionMap map[detector.RiskTier]Action) (string, []AppliedTransform) {
+	resolver := func(det detector.Detection) Action {
+		return actionMap[det.Tier]
+	}
+	return TransformTextWithResolver(text, detections, resolver)
 }
 
 // AppliedTransform records what was transformed and how.
