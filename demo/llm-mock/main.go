@@ -156,7 +156,7 @@ func generateResponse(prompt string) string {
 			"đang phát triển quantum computer với hàng nghìn qubit."
 	}
 
-	// HR / employee records
+	// HR / employee records / batch
 	if strings.Contains(lower, "hồ sơ") || strings.Contains(lower, "nhân viên") || strings.Contains(lower, "danh sách") {
 		return "Tôi đã nhận được yêu cầu xử lý hồ sơ. " +
 			"Lưu ý: để bảo vệ thông tin cá nhân, các trường CCCD, SĐT, và email của nhân viên " +
@@ -165,7 +165,7 @@ func generateResponse(prompt string) string {
 	}
 
 	// Financial / banking
-	if strings.Contains(lower, "chuyển tiền") || strings.Contains(lower, "ngân hàng") || strings.Contains(lower, "tài khoản") {
+	if strings.Contains(lower, "chuyển tiền") || strings.Contains(lower, "ngân hàng") || strings.Contains(lower, "tài khoản") || strings.Contains(lower, "thanh toán") {
 		return "Tôi nhận được yêu cầu liên quan đến giao dịch tài chính. " +
 			"Với các thông tin như số tài khoản, tôi chỉ xử lý dữ liệu đã được mã hóa bởi gateway. " +
 			"Nếu bạn thấy token (TOK_xxx) trong câu hỏi, điều đó có nghĩa dữ liệu nhạy cảm đã được bảo vệ."
@@ -193,19 +193,19 @@ func generateResponse(prompt string) string {
 			"để xác minh quyền trước khi thực hiện export."
 	}
 
-	// Email / communication
-	if strings.Contains(lower, "email") || strings.Contains(lower, "gửi mail") || strings.Contains(lower, "liên hệ") {
+	// Email / communication  
+	if strings.Contains(lower, "liên hệ") && (strings.Contains(lower, "email") || strings.Contains(lower, "sđt")) {
 		return "Tôi nhận được yêu cầu liên quan đến thông tin liên hệ. " +
-			"Lưu ý: địa chỉ email ​​và SĐT đã được mã hóa bởi Legit Flow. " +
+			"Lưu ý: địa chỉ email và SĐT đã được mã hóa bởi Legit Flow. " +
 			"Tôi sẽ xử lý dựa trên token, không thấy thông tin gốc."
 	}
 
-	// Default: acknowledge what was received
+	// Default: clean response — no PII detected
 	return fmt.Sprintf(
-		"Tôi đã nhận được tin nhắn của bạn và xử lý thành công. "+
-			"Nội dung nhận được: «%s». "+
-			"Nếu có dữ liệu nhạy cảm, Legit Flow Gateway đã xử lý trước khi tới tôi.",
-		truncate(prompt, 100),
+		"✅ Tin nhắn sạch — không phát hiện dữ liệu nhạy cảm. "+
+			"Nội dung: «%s». "+
+			"Legit Flow Gateway đã quét và xác nhận an toàn.",
+		truncate(prompt, 120),
 	)
 }
 

@@ -1029,15 +1029,25 @@
   <script>
     // ── Scenarios ─────────────────────────────
     const scenarios = [
+      // ── Core Actions ──
       { id: 'safe', title: '✅ Câu hỏi an toàn', mode: 'standard', category: 'allow', prompt: 'Giải thích cách quantum computing hoạt động.' },
       { id: 'cccd', title: '🔐 CCCD → Tokenize', mode: 'standard', category: 'tokenize', prompt: 'Xin chào, CCCD của tôi là 079090123456.' },
       { id: 'jwt', title: '🚫 JWT → Block', mode: 'standard', category: 'block', prompt: 'Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' },
       { id: 'phone', title: '🎭 SĐT + Email → Mask', mode: 'standard', category: 'mask', prompt: 'Liên hệ tôi qua SĐT 0901234567 hoặc email nguyen.van.a@company.vn' },
       { id: 'bank', title: '🏦 Tài khoản → Tokenize', mode: 'standard', category: 'tokenize', prompt: 'Chuyển tiền vào STK 1234567890123456 ngân hàng VCB chi nhánh Hà Nội.' },
+      // ── Enterprise Use Cases ──
       { id: 'hr', title: '👤 Hồ sơ nhân viên (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Phân tích hồ sơ nhân viên: Nguyễn Văn A, CCCD 079090123456, SĐT 0901234567, email nguyenvana@company.vn. Đánh giá năng lực Q1/2026.' },
       { id: 'medical', title: '🏥 Hồ sơ bệnh án (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Tóm tắt bệnh án: Bệnh nhân Trần Thị B, CCCD 038090654321, SĐT 0987654321. Chẩn đoán: viêm phổi. Cần kê đơn thuốc phù hợp.' },
       { id: 'contract', title: '📝 Hợp đồng (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Soạn hợp đồng lao động cho ông Lê Văn C, CCCD 025190789012, STK 9876543210123456 tại Techcombank. Mức lương 25 triệu/tháng.' },
       { id: 'multi', title: '⚡ All Actions (T+M+B)', mode: 'standard', category: 'block', prompt: 'NV001: CCCD 012345678901, SĐT 0912345678, email pham.d@corp.vn, STK 1111222233334444. Token: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.abc123' },
+      // ── Edge Cases & False Positives ──
+      { id: 'fp-numbers', title: '⚠ FP: Mã đơn hàng & tiền', mode: 'standard', category: 'allow', prompt: 'Mã đơn hàng: DH-123456789. Tổng doanh thu Q1: 999,123,456,000 VND. Mã giao dịch: TXN-87654321. Số lượng sản phẩm: 15000 cái. Timestamp: 1711891200.' },
+      { id: 'fp-random', title: '🎲 Random Input / Gibberish', mode: 'standard', category: 'allow', prompt: 'asdkfjh 12345 qwerty !@#$%^&*() hello world 098765 foo bar baz testing 1 2 3. Một hai ba bốn năm sáu bảy tám chín mười.' },
+      { id: 'bulk', title: '📋 Batch 10 nhân viên', mode: 'standard', category: 'tokenize', prompt: 'Danh sách NV:\n1. Nguyễn A - CCCD 079090111111 - SĐT 0901111111 - a@co.vn\n2. Trần B - CCCD 079090222222 - SĐT 0902222222 - b@co.vn\n3. Lê C - CCCD 079090333333 - SĐT 0903333333 - c@co.vn\n4. Phạm D - CCCD 079090444444 - SĐT 0904444444 - d@co.vn\n5. Hoàng E - CCCD 079090555555 - SĐT 0905555555 - e@co.vn\n6. Vũ F - CCCD 079090666666 - SĐT 0906666666 - f@co.vn\n7. Đặng G - CCCD 079090777777 - SĐT 0907777777 - g@co.vn\n8. Bùi H - CCCD 079090888888 - SĐT 0908888888 - h@co.vn\n9. Đỗ I - CCCD 079090999999 - SĐT 0909999999 - i@co.vn\n10. Mai K - CCCD 079090101010 - SĐT 0901010101 - k@co.vn' },
+      { id: 'paragraph', title: '📝 PII trong đoạn văn dài', mode: 'standard', category: 'tokenize', prompt: 'Kính gửi Ban Giám Đốc, tôi là Nguyễn Văn X (CCCD: 079090123456), hiện đang công tác tại phòng IT. Xin gửi báo cáo tài chính: tổng chi phí dự án 850 triệu VND, đã thanh toán qua STK 5678901234567890 tại Vietcombank. Mọi thắc mắc xin liên hệ SĐT 0912345678 hoặc email nguyenx@company.vn. Trân trọng.' },
+      { id: 'unicode', title: '🌐 Unicode + Emoji', mode: 'standard', category: 'allow', prompt: '🎉 Chúc mừng năm mới 2026! 🧧💰 Tôi muốn hỏi về sản phẩm ABC-123 và dịch vụ XYZ-456. Giá niêm yết: ¥12,500 / €9,999 / ₫250,000. Không có PII ở đây 😊.' },
+      { id: 'borderline', title: '🔍 Số borderline (9-12 chữ số)', mode: 'standard', category: 'allow', prompt: 'Mã ZIP: 70000. Số hóa đơn: 2026032512345. Mã bưu kiện: VN123456789VN. Số container: MSKU1234567. Mã vạch: 8935049000134. Population: 98000000.' },
+      // ── Security Tests ──
       { id: 'stream', title: '🌊 Streaming Leak Test', mode: 'stream', category: 'stream', prompt: 'Kiểm thử streaming output guard: hãy mô phỏng một phản hồi có chứa thông tin nhạy cảm.' },
       { id: 'export', title: '🔧 Tool Guard: Export CSV', mode: 'standard', category: 'allow', prompt: 'Xuất danh sách nhân viên ra file CSV để gửi cho phòng kế toán.' }
     ];

@@ -121,10 +121,94 @@ func (d *L1RegexDetector) Detect(ctx context.Context, text string) ([]Detection,
 func shouldSkipL1Match(detType DetectionType, value string) bool {
 	switch detType {
 	case TypeBankAccount:
-		// Keep the generic bank-account detector from shadowing more specific
-		// Vietnamese identifiers that have their own documented policy outcome.
-		return cccdPattern.MatchString(value) || phoneVNPattern.MatchString(value)
+		// Skip if it matches a more specific pattern (CCCD or phone)
+		if cccdPattern.MatchString(value) || phoneVNPattern.MatchString(value) {
+			return true
+		}
+		// Skip short numbers (≤9 digits) — likely order IDs, timestamps, etc.
+		if len(value) <= 9 {
+			return true
+		}
+		// Skip numbers that are clearly timestamps (10-digit Unix epoch)
+		if len(value) == 10 && (value[0] == '1' || value[0] == '2') {
+			return true
+		}
+		// Skip round numbers (likely monetary amounts: 999123456789)
+		if isRoundNumber(value) {
+			return true
+		}
+		return false
+	case "credit_card":
+		// Skip if too short or fails Luhn checksum
+		if len(value) < 13 || !luhnValid(value) {
+			return true
+		}
+		return false
+	case TypeAPIKey:
+		// For hex secrets: require minimum 40 chars and reject pure-digit strings
+		if hexSecretPattern.MatchString(value) && !awsAPIKeyPattern.MatchString(value) && !openAIKeyPattern.MatchString(value) {
+			if len(value) < 40 {
+				return true
+			}
+			// Must contain at least some hex letters (a-f) to be a secret
+			hasHexLetter := false
+			for _, c := range value {
+				if (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') {
+					hasHexLetter = true
+					break
+				}
+			}
+			if !hasHexLetter {
+				return true
+			}
+		}
+		return false
 	default:
 		return false
 	}
+}
+
+// isRoundNumber checks if a number ends with 3+ zeros (likely money, not PII)
+func isRoundNumber(s string) bool {
+	if len(s) < 6 {
+		return false
+	}
+	trailingZeros := 0
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == '0' {
+			trailingZeros++
+		} else {
+			break
+		}
+	}
+	return trailingZeros >= 3
+}
+
+// luhnValid validates a number string using the Luhn algorithm (credit card checksum)
+func luhnValid(number string) bool {
+	// Strip spaces and dashes
+	var digits []int
+	for _, c := range number {
+		if c >= '0' && c <= '9' {
+			digits = append(digits, int(c-'0'))
+		}
+	}
+	if len(digits) < 13 {
+		return false
+	}
+
+	sum := 0
+	alt := false
+	for i := len(digits) - 1; i >= 0; i-- {
+		d := digits[i]
+		if alt {
+			d *= 2
+			if d > 9 {
+				d -= 9
+			}
+		}
+		sum += d
+		alt = !alt
+	}
+	return sum%10 == 0
 }
