@@ -19,9 +19,7 @@
       --danger: #ef4444;
       --success: #10b981;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--bg-base);
@@ -29,7 +27,6 @@
       line-height: 1.5;
       padding: 20px;
     }
-
     .appbar {
       display: flex;
       justify-content: space-between;
@@ -38,12 +35,10 @@
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 16px 24px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-
     .brand-copy h1 { font-size: 1.25rem; font-weight: 600; }
     .brand-copy p { color: var(--text-muted); font-size: 0.875rem; }
-
     .btn {
       background: var(--border-color);
       color: white;
@@ -56,123 +51,260 @@
     }
     .btn:hover { background: rgba(255,255,255,0.15); }
 
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+    }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.04); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
     .table-container {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      overflow: hidden;
+      overflow-x: auto;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
     }
-
     th, td {
-      padding: 14px 20px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-color);
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
     }
-
     th {
       background: rgba(255,255,255,0.02);
       font-weight: 600;
       color: var(--text-muted);
+      white-space: nowrap;
     }
-
     tr:last-child td { border-bottom: none; }
     tr:hover { background: rgba(255,255,255,0.02); }
 
     .badge {
       display: inline-flex;
-      align-items: center;
-      padding: 4px 8px;
+      padding: 3px 7px;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      background: rgba(255,255,255,0.1);
     }
+    .badge.block, .badge.redact { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .badge.mask, .badge.tokenize, .badge.pseudonymize { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .badge.allow, .badge.transformed { background: rgba(16,185,129,0.15); color: #6ee7b7; }
 
-    .badge.block, .badge.redact { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-    .badge.mask, .badge.tokenize, .badge.pseudonymize { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
-    .badge.allow { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
-    
-    .req-id {
+    .mono { font-family: monospace; color: var(--text-muted); font-size: 0.75rem; }
+    .redacted-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px 14px;
       font-family: monospace;
-      color: var(--text-muted);
-      cursor: copy;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 120px;
+      overflow-y: auto;
+      color: #cbd5e1;
     }
+    .transform-chip {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      margin: 2px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      background: rgba(245,158,11,0.1);
+      color: #fcd34d;
+      font-family: monospace;
+    }
+    .empty-msg { text-align: center; color: var(--text-muted); padding: 40px; }
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 20px;
+      flex: 1;
+    }
+    .stat-card span { color: var(--text-muted); font-size: 0.75rem; display: block; }
+    .stat-card strong { font-size: 1.5rem; }
   </style>
 </head>
 <body>
 
   <header class="appbar">
     <div class="brand-copy">
-      <h1>Audit Logs</h1>
-      <p>Tier 1 Gateway Request Tracking</p>
+      <h1>📊 Audit Logs Dashboard</h1>
+      <p>Tier 1 (Metadata) &amp; Tier 2 (Sanitized Input &amp; Transforms)</p>
     </div>
     <a href="/" class="btn">🔙 Quay lại ứng dụng</a>
   </header>
 
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Thời gian (Timestamp)</th>
-          <th>User ID</th>
-          <th>Request ID</th>
-          <th>Phát hiện (Detections)</th>
-          <th>Trạng thái (Outcome)</th>
-          <th>Hành động (Action)</th>
-        </tr>
-      </thead>
-      <tbody id="logTableBody">
-        <tr><td colspan="6" style="text-align:center; color:#94a3b8;">Đang tải dữ liệu...</td></tr>
-      </tbody>
-    </table>
+  <div class="stats-bar">
+    <div class="stat-card"><span>Tier 1 Events</span><strong id="t1Count">-</strong></div>
+    <div class="stat-card"><span>Tier 2 Events</span><strong id="t2Count">-</strong></div>
+    <div class="stat-card"><span>Total Transforms</span><strong id="txCount">-</strong></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="tier1">Tier 1 — Metadata</button>
+    <button class="tab-btn" data-tab="tier2">Tier 2 — Sanitized Input</button>
+  </div>
+
+  <!-- TIER 1 -->
+  <div id="tier1Pane" class="tab-pane active">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Thời gian</th>
+            <th>User ID</th>
+            <th>Request ID</th>
+            <th>Phát hiện (Detections)</th>
+            <th>Kết quả (Outcome)</th>
+            <th>Hành động (Action)</th>
+          </tr>
+        </thead>
+        <tbody id="tier1Body">
+          <tr><td colspan="6" class="empty-msg">Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TIER 2 -->
+  <div id="tier2Pane" class="tab-pane">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50%">Sanitized Input (Đã mask)</th>
+            <th>Transforms (Chi tiết thay thế)</th>
+          </tr>
+        </thead>
+        <tbody id="tier2Body">
+          <tr><td colspan="2" class="empty-msg">Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab + 'Pane').classList.add('active');
+      });
+    });
+
     async function loadLogs() {
       try {
-        const response = await fetch('/api/logs');
-        const logs = await response.json();
-        
-        const tbody = document.getElementById('logTableBody');
-        tbody.innerHTML = '';
+        const res = await fetch('/api/logs');
+        const data = await res.json();
+        renderTier1(data.tier1 || []);
+        renderTier2(data.tier2 || []);
 
-        if (!logs || logs.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Không có dữ liệu log. Gửi request để tạo log mới.</td></tr>';
-          return;
-        }
-
-        logs.forEach(log => {
-          const tr = document.createElement('tr');
-          
-          let detStr = '-';
-          if (log.detections && log.detections.length > 0) {
-            detStr = log.detections.map(d => `<span style="color:#fcd34d;">${d.type}</span> (x${d.count})`).join(', ');
-          }
-
-          tr.innerHTML = `
-            <td style="white-space:nowrap; color:#94a3b8;">${new Date(log.timestamp).toLocaleString()}</td>
-            <td style="font-weight:600;">${log.user_id || 'System'}</td>
-            <td><span class="req-id" title="Copy ID">${log.request_id.split('-')[0]}...</span></td>
-            <td>${detStr}</td>
-            <td style="text-transform: capitalize;">${log.outcome}</td>
-            <td><span class="badge ${log.action}">${log.action}</span></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        document.getElementById('logTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Lỗi khi tải Audit Logs!</td></tr>';
+        document.getElementById('t1Count').textContent = (data.tier1 || []).length;
+        document.getElementById('t2Count').textContent = (data.tier2 || []).length;
+        let txTotal = 0;
+        (data.tier2 || []).forEach(e => { txTotal += (e.transforms || []).length; });
+        document.getElementById('txCount').textContent = txTotal;
+      } catch (e) {
+        document.getElementById('tier1Body').innerHTML = '<tr><td colspan="6" class="empty-msg" style="color:#ef4444;">Lỗi tải dữ liệu</td></tr>';
       }
     }
 
+    function renderTier1(logs) {
+      const tbody = document.getElementById('tier1Body');
+      if (!logs.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Không có dữ liệu Tier 1.</td></tr>'; return; }
+      tbody.innerHTML = '';
+      logs.forEach(log => {
+        const tr = document.createElement('tr');
+        let dets = '-';
+        if (log.detections && log.detections.length) {
+          dets = log.detections.map(d => `<span style="color:#fcd34d">${d.type}</span> (x${d.count})`).join(', ');
+        }
+        tr.innerHTML = `
+          <td class="mono" style="white-space:nowrap">${log.timestamp ? new Date(log.timestamp).toLocaleString() : '-'}</td>
+          <td style="font-weight:600">${log.user_id || 'System'}</td>
+          <td class="mono">${(log.request_id || '').substring(0, 8)}…</td>
+          <td>${dets}</td>
+          <td style="text-transform:capitalize">${log.outcome || '-'}</td>
+          <td><span class="badge ${log.action}">${log.action || '-'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTier2(logs) {
+      const tbody = document.getElementById('tier2Body');
+      if (!logs.length) { tbody.innerHTML = '<tr><td colspan="2" class="empty-msg">Không có dữ liệu Tier 2.</td></tr>'; return; }
+      tbody.innerHTML = '';
+      logs.forEach(log => {
+        const tr = document.createElement('tr');
+
+        // Parse redacted_input to extract the user message content
+        let displayInput = log.redacted_input || '';
+        try {
+          const parsed = JSON.parse(displayInput);
+          if (parsed.messages && parsed.messages.length) {
+            displayInput = parsed.messages.map(m => m.content).join('\n');
+          }
+        } catch (e) {}
+
+        let txHtml = '-';
+        if (log.transforms && log.transforms.length) {
+          txHtml = log.transforms.map(t =>
+            `<span class="transform-chip"><strong>${t.type}</strong> → ${t.replacement}</span>`
+          ).join(' ');
+        }
+
+        tr.innerHTML = `
+          <td><div class="redacted-box">${displayInput}</div></td>
+          <td>${txHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     loadLogs();
-    setInterval(loadLogs, 10000); // Reload every 10s
+    setInterval(loadLogs, 10000);
   </script>
 </body>
 </html>

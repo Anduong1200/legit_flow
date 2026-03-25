@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -103,29 +102,15 @@ func handleStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateResponse(prompt string) string {
-	responses := []string{
-		"Cảm ơn bạn đã hỏi. Theo thông tin tôi có, dự án đang tiến triển tốt và đúng tiến độ.",
-		"Tôi hiểu câu hỏi của bạn. Hãy để tôi giải thích chi tiết hơn về vấn đề này.",
-		"Kết quả phân tích cho thấy hiệu suất hệ thống đạt p95 dưới 200ms như mục tiêu đề ra.",
-	}
-
-	// Sometimes inject PII in response to test output guard
-	piiResponses := []string{
-		"Thông tin liên hệ: Trần Thị B, CCCD 098765432101, email: tran.b@internal.vn, SĐT 0987654321.",
-		"Tài khoản ngân hàng: 1234567890123456, chi nhánh Hà Nội. Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-		"API key nội bộ: sk-testkey1234567890abcdefghijklmnop. Vui lòng bảo mật.",
-	}
+	// For streaming output guard test, inject PII to test truncation
+	piiResponse := "Tài khoản ngân hàng: 1234567890123456, chi nhánh Hà Nội. Token xác thực: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 	if shouldForceSensitiveResponse(prompt) {
-		return piiResponses[1]
+		return piiResponse
 	}
 
-	// 30% chance of PII injection for testing
-	if rand.Intn(10) < 3 {
-		return piiResponses[rand.Intn(len(piiResponses))]
-	}
-	_ = prompt
-	return responses[rand.Intn(len(responses))]
+	// Echo back the sanitized prompt so the chat UI shows the actual masked tokens
+	return "[Echo] " + prompt
 }
 
 func shouldForceSensitiveResponse(prompt string) bool {

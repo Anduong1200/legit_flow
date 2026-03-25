@@ -8,31 +8,31 @@
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap');
 
     :root {
-      --bg: #eef4ff;
-      --bg-soft: #f6f9ff;
-      --navy: #0e1c4a;
-      --navy-deep: #07102d;
-      --primary: #2358ff;
-      --primary-soft: rgba(35, 88, 255, 0.12);
-      --teal: #10b7a6;
-      --teal-soft: rgba(16, 183, 166, 0.12);
-      --gold: #ffb95e;
-      --gold-soft: rgba(255, 185, 94, 0.16);
-      --danger: #eb5757;
-      --danger-soft: rgba(235, 87, 87, 0.14);
-      --success: #169b6b;
-      --success-soft: rgba(22, 155, 107, 0.12);
-      --ink: #12204a;
-      --muted: #69779a;
-      --border: rgba(18, 32, 74, 0.08);
-      --card: rgba(255, 255, 255, 0.88);
-      --card-strong: rgba(255, 255, 255, 0.96);
-      --shadow-lg: 0 32px 80px rgba(17, 35, 86, 0.16);
-      --shadow-md: 0 18px 40px rgba(17, 35, 86, 0.12);
-      --radius-xl: 32px;
-      --radius-lg: 24px;
-      --radius-md: 18px;
-      --radius-sm: 14px;
+      --bg: #0b0f1a;
+      --bg-soft: #111827;
+      --navy: #e2e8f0;
+      --navy-deep: #f1f5f9;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59, 130, 246, 0.15);
+      --teal: #10b981;
+      --teal-soft: rgba(16, 185, 129, 0.12);
+      --gold: #f59e0b;
+      --gold-soft: rgba(245, 158, 11, 0.16);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.14);
+      --success: #10b981;
+      --success-soft: rgba(16, 185, 129, 0.12);
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --card: rgba(17, 24, 39, 0.85);
+      --card-strong: rgba(30, 41, 59, 0.9);
+      --shadow-lg: 0 32px 80px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.3);
+      --radius-xl: 24px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
     }
 
     * {
@@ -49,10 +49,10 @@
       font-family: "Manrope", "Segoe UI", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 10% 18%, rgba(35, 88, 255, 0.18), transparent 22%),
-        radial-gradient(circle at 85% 15%, rgba(16, 183, 166, 0.18), transparent 18%),
-        radial-gradient(circle at 80% 88%, rgba(255, 185, 94, 0.18), transparent 18%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 48%, #edf3ff 100%);
+        radial-gradient(circle at 10% 18%, rgba(59, 130, 246, 0.08), transparent 22%),
+        radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.06), transparent 18%),
+        radial-gradient(circle at 80% 88%, rgba(245, 158, 11, 0.05), transparent 18%),
+        linear-gradient(180deg, #0b0f1a 0%, #111827 48%, #0f172a 100%);
       overflow-x: hidden;
     }
 
@@ -67,10 +67,10 @@
 
     body::before {
       background-image:
-        linear-gradient(rgba(14, 28, 74, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14, 28, 74, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
       background-size: 32px 32px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.8));
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
     }
 
     .app-shell {
@@ -433,8 +433,8 @@
       gap: 8px;
       padding: 7px;
       border-radius: 18px;
-      background: rgba(18, 32, 74, 0.05);
-      border: 1px solid rgba(18, 32, 74, 0.06);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
     }
 
     .option-bar button {
@@ -454,9 +454,9 @@
     }
 
     .option-bar button.active {
-      background: linear-gradient(135deg, #fff, #edf3ff);
+      background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(30,41,59,0.8));
       color: var(--navy);
-      box-shadow: 0 8px 18px rgba(17, 35, 86, 0.08);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
     }
 
     .principle-chips {
@@ -468,8 +468,8 @@
     .principle-chips span {
       border-radius: 999px;
       padding: 11px 14px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(18, 32, 74, 0.06);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
       color: var(--ink);
       font-size: 0.84rem;
       font-weight: 700;
@@ -1974,7 +1974,9 @@
         role: 'user',
         title: source,
         text: message,
-        meta: inspection.summary,
+        meta: inspection.sanitized_input && inspection.sanitized_input !== message
+          ? '🔒 Đã gửi tới LLM: ' + inspection.sanitized_input
+          : '',
         chips: [
           state.mode === 'stream' ? 'Streaming Guard' : 'Standard Flow',
           actionBadge(inspection.overall_action)
@@ -2022,19 +2024,23 @@
       });
 
       const data = await parseMaybeJSON(response);
+      const sanitizedNote = state.inspection && state.inspection.sanitized_input && state.inspection.sanitized_input !== message
+        ? '🛡️ Prompt gửi tới LLM (đã mask): ' + state.inspection.sanitized_input
+        : '';
+
       addMessage({
         role: 'assistant',
-        title: data.blocked ? 'Policy Blocked Request' : 'Gateway Response',
+        title: data.blocked ? 'Policy Blocked Request' : 'Phản hồi từ LLM',
         text: data.reply || 'Gateway returned no content.',
         blocked: Boolean(data.blocked),
         guarded: Boolean(data.blocked),
-        meta: formatMeta({
+        meta: sanitizedNote || formatMeta({
           requestId: data.request_id,
           mode: 'Standard Flow',
-          extra: data.blocked ? 'Request stopped before reaching the model.' : 'Response returned successfully.'
+          extra: data.blocked ? 'Request bị chặn trước khi tới model.' : ''
         }),
         chips: [
-          data.blocked ? 'Blocked before route' : 'Response received',
+          data.blocked ? 'Blocked' : 'Response received',
           state.inspection ? actionBadge(state.inspection.overall_action) : 'Policy evaluated'
         ]
       });

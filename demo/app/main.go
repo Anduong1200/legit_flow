@@ -109,6 +109,23 @@ type auditLogEntry struct {
 	LatencyMs int    `json:"latency_ms"`
 }
 
+type tier2LogEntry struct {
+	EventID       string `json:"event_id"`
+	RedactedInput string `json:"redacted_input"`
+	Transforms    []struct {
+		Type        string `json:"type"`
+		Action      string `json:"action"`
+		Replacement string `json:"replacement"`
+		Start       int    `json:"start"`
+		End         int    `json:"end"`
+	} `json:"transforms"`
+}
+
+type combinedLogsResponse struct {
+	Tier1 []auditLogEntry `json:"tier1"`
+	Tier2 []tier2LogEntry  `json:"tier2"`
+}
+
 func main() {
 	app := newDemoApp()
 	mux := http.NewServeMux()
@@ -450,7 +467,7 @@ func (a *demoApp) handleNotification(w http.ResponseWriter, r *http.Request) {
 
 func (a *demoApp) handleApiLogs(w http.ResponseWriter, r *http.Request) {
 	if a.auditDir == "" {
-		writeJSON(w, http.StatusOK, []auditLogEntry{})
+		writeJSON(w, http.StatusOK, combinedLogsResponse{})
 		return
 	}
 
@@ -460,32 +477,47 @@ func (a *demoApp) handleApiLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var allLogs []auditLogEntry
+	var tier1Logs []auditLogEntry
+	var tier2Logs []tier2LogEntry
+
 	for _, file := range files {
-		if !file.IsDir() && strings.HasPrefix(file.Name(), "tier1_") && strings.HasSuffix(file.Name(), ".jsonl") {
-			content, err := os.ReadFile(filepath.Join(a.auditDir, file.Name()))
-			if err != nil {
+		if file.IsDir() {
+			continue
+		}
+		name := file.Name()
+		if !strings.HasSuffix(name, ".jsonl") {
+			continue
+		}
+
+		content, err := os.ReadFile(filepath.Join(a.auditDir, name))
+		if err != nil {
+			continue
+		}
+		scanner := bufio.NewScanner(bytes.NewReader(content))
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
 				continue
 			}
-			scanner := bufio.NewScanner(bytes.NewReader(content))
-			for scanner.Scan() {
-				line := scanner.Text()
-				if line == "" {
-					continue
-				}
+			if strings.HasPrefix(name, "tier1_") {
 				var entry auditLogEntry
 				if err := json.Unmarshal([]byte(line), &entry); err == nil {
-					allLogs = append(allLogs, entry)
+					tier1Logs = append(tier1Logs, entry)
+				}
+			} else if strings.HasPrefix(name, "tier2_") {
+				var entry tier2LogEntry
+				if err := json.Unmarshal([]byte(line), &entry); err == nil {
+					tier2Logs = append(tier2Logs, entry)
 				}
 			}
 		}
 	}
 
-	sort.Slice(allLogs, func(i, j int) bool {
-		return allLogs[i].Timestamp > allLogs[j].Timestamp
+	sort.Slice(tier1Logs, func(i, j int) bool {
+		return tier1Logs[i].Timestamp > tier1Logs[j].Timestamp
 	})
 
-	writeJSON(w, http.StatusOK, allLogs)
+	writeJSON(w, http.StatusOK, combinedLogsResponse{Tier1: tier1Logs, Tier2: tier2Logs})
 }
 
 func (i *demoInspector) Inspect(ctx context.Context, text string) inspectResponse {
