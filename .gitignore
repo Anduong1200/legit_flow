@@ -35,6 +35,11 @@ secrets/
 coverage.out
 coverage.html
 *.test
+test-errors.log
+test_out.txt
+
+# Audit logs (runtime data, not source)
+audit-logs/
 
 # Helm
 deploy/helm/legit-flow/charts/

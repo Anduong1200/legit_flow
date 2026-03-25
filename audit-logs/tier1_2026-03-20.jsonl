@@ -1,1 +1,0 @@
-{"event_id":"6accf53f-4bb6-4ac5-815e-724b54a6aebc","timestamp":"2026-03-20T18:06:26.2248945+07:00","request_id":"f361b95c-9661-4444-b2c1-e44c680c75e0","user_id":"ancongchua","source_ip":"[::1]:64230","action":"tokenize","policy_name":"default-hardened","detections":[{"type":"BANK_ACCOUNT","tier":"restricted","count":1}],"outcome":"transformed","latency_ms":1}

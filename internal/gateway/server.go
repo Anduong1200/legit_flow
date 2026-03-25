@@ -110,7 +110,6 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	actionMap := s.policyEngine.GetActionMap()
 	transformedText, applied := transformer.TransformText(inputText, detections, actionMap)
 
-<<<<<<< HEAD
 	// Inject tokens mapping for round-trip decryption
 	tokens := make(tokenMap)
 	for _, a := range applied {
@@ -121,8 +120,7 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, ctxKeyTokens, tokens)
 	r = r.WithContext(ctx)
 
-=======
->>>>>>> origin/main
+
 	// ── Step 4: Record metrics ──────────────────────────────────
 	for _, det := range detections {
 		action := actionMap[det.Tier]
@@ -247,7 +245,6 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 			}
 
 			if result.SafeText != "" {
-<<<<<<< HEAD
 				safeText := result.SafeText
 				if tokens, ok := ctx.Value(ctxKeyTokens).(tokenMap); ok && len(tokens) > 0 {
 					for rep, orig := range tokens {
@@ -255,9 +252,6 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 					}
 				}
 				_, _ = fmt.Fprintf(w, "data: %s\n\n", safeText)
-=======
-				_, _ = fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
->>>>>>> origin/main
 				flusher.Flush()
 			}
 		}
@@ -273,7 +267,6 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 		return
 	}
 	if result.SafeText != "" {
-<<<<<<< HEAD
 		safeText := result.SafeText
 		if tokens, ok := ctx.Value(ctxKeyTokens).(tokenMap); ok && len(tokens) > 0 {
 			for rep, orig := range tokens {
@@ -281,9 +274,6 @@ func (s *Server) handleStreamingProxy(w http.ResponseWriter, r *http.Request, re
 			}
 		}
 		_, _ = fmt.Fprintf(w, "data: %s\n\n", safeText)
-=======
-		_, _ = fmt.Fprintf(w, "data: %s\n\n", result.SafeText)
->>>>>>> origin/main
 		flusher.Flush()
 	}
 	if result.Violation {
@@ -318,7 +308,6 @@ func (s *Server) modifyResponse(resp *http.Response) error {
 		bodyBytes = []byte(transformed)
 	}
 
-<<<<<<< HEAD
 	// Restore tokens (Decryption)
 	reqCtx := resp.Request.Context()
 	if tokens, ok := reqCtx.Value(ctxKeyTokens).(tokenMap); ok && len(tokens) > 0 {
@@ -329,8 +318,7 @@ func (s *Server) modifyResponse(resp *http.Response) error {
 		bodyBytes = []byte(text)
 	}
 
-=======
->>>>>>> origin/main
+
 	resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 	resp.ContentLength = int64(len(bodyBytes))
 	resp.Header.Set("Content-Length", strconv.Itoa(len(bodyBytes)))
@@ -367,12 +355,9 @@ func (s *Server) handlePolicyReload(w http.ResponseWriter, r *http.Request) {
 type contextKey string
 
 const ctxKeyRequestID contextKey = "request_id"
-<<<<<<< HEAD
 const ctxKeyTokens contextKey = "tokens"
 
 type tokenMap map[string]string
-=======
->>>>>>> origin/main
 
 func isStreamingRequest(r *http.Request) bool {
 	accept := r.Header.Get("Accept")

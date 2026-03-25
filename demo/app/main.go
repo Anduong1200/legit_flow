@@ -123,7 +123,7 @@ type tier2LogEntry struct {
 
 type combinedLogsResponse struct {
 	Tier1 []auditLogEntry `json:"tier1"`
-	Tier2 []tier2LogEntry  `json:"tier2"`
+	Tier2 []tier2LogEntry `json:"tier2"`
 }
 
 func main() {

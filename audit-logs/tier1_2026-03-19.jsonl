@@ -1,1 +1,0 @@
-{"event_id":"56b97a18-9dd9-433f-8f6b-59f381012818","timestamp":"2026-03-19T21:23:56.3646196+07:00","request_id":"58480c3b-27bd-444e-927d-c95fccd617fe","user_id":"demo-user","source_ip":"[::1]:50031","action":"block","policy_name":"default-hardened","detections":[{"type":"BANK_ACCOUNT","tier":"restricted","count":1}],"outcome":"blocked","latency_ms":0}

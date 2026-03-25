@@ -1,9 +1,0 @@
-# github.com/legitflow/legitflow/test/e2e_test [github.com/legitflow/legitflow/test/e2e.test]
-test\e2e\demo_test.go:41:6: cfg.AuditLogPath undefined (type *common.Config has no field or method AuditLogPath)
-test\e2e\demo_test.go:46:16: auditor.Close undefined (type *audit.Logger has no field or method Close)
-test\e2e\demo_test.go:93:30: reg.Detect undefined (type *detector.Registry has no field or method Detect)
-test\e2e\demo_test.go:99:22: eng.Evaluate undefined (type *policy.Engine has no field or method Evaluate)
-test\e2e\demo_test.go:109:12: auditor.LogRequest undefined (type *audit.Logger has no field or method LogRequest)
-test\e2e\demo_test.go:109:29: undefined: audit.LogEntry
-FAIL	github.com/legitflow/legitflow/test/e2e [build failed]
-FAIL
