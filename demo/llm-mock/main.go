@@ -46,6 +46,11 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 
 	response := generateResponse(prompt)
 
+	routedModel := r.Header.Get("X-Routed-Model")
+	if routedModel != "" {
+		w.Header().Set("X-Routed-Model", routedModel)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"choices": []map[string]interface{}{
@@ -76,6 +81,11 @@ func handleStream(w http.ResponseWriter, r *http.Request) {
 
 	response := generateResponse(prompt)
 	words := strings.Fields(response)
+
+	routedModel := r.Header.Get("X-Routed-Model")
+	if routedModel != "" {
+		w.Header().Set("X-Routed-Model", routedModel)
+	}
 
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -147,6 +157,12 @@ func generateResponse(prompt string) string {
 	}
 
 	// ── Contextual responses for different scenarios ──
+	if strings.Contains(lower, "hàm") || strings.Contains(lower, "viết code") || strings.Contains(lower, "fibonacci") {
+		return "👨‍💻 Chuyên gia Lập trình (Routed via claude-3-5-sonnet): Dưới đây là đoạn code bạn yêu cầu:\n```rust\nfn fibonacci(n: u32) -> u32 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => fibonacci(n - 1) + fibonacci(n - 2),\n    }\n}\n```"
+	}
+	if strings.Contains(lower, "pháp lý") || strings.Contains(lower, "hợp đồng") || strings.Contains(lower, "bồi thường") {
+		return "⚖️ Chuyên gia Pháp lý (Routed via command-r-plus): Đánh giá rủi ro hợp đồng: \n1. Các điều khoản bồi thường cần được giới hạn tỷ lệ (cap liability).\n2. Cần bổ sung điều khoản Force Majeure (Bất khả kháng)."
+	}
 
 	// Quantum / general knowledge
 	if strings.Contains(lower, "quantum") {

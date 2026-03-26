@@ -180,6 +180,16 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	r.Header.Set("Content-Length", strconv.Itoa(len(transformedText)))
 	r.Header.Set("X-Request-ID", requestID)
 
+	// ── Mock AI Model Orchestration ──
+	promptLower := strings.ToLower(inputText)
+	routedModel := "gpt-4o-mini"
+	if strings.Contains(promptLower, "hàm") || strings.Contains(promptLower, "code") || strings.Contains(promptLower, "python") || strings.Contains(promptLower, "rust") {
+		routedModel = "claude-3-5-sonnet"
+	} else if strings.Contains(promptLower, "pháp lý") || strings.Contains(promptLower, "hợp đồng") || strings.Contains(promptLower, "khoản") || strings.Contains(promptLower, "rủi ro") {
+		routedModel = "command-r-plus"
+	}
+	r.Header.Set("X-Routed-Model", routedModel)
+
 	// Check if streaming is requested
 	if isStreamingRequest(r) {
 		s.handleStreamingProxy(w, r, requestID)

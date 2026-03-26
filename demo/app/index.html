@@ -168,6 +168,8 @@
       { id: 'phone', title: '🎭 SĐT + Email → Mask', mode: 'standard', category: 'mask', prompt: 'Liên hệ tôi qua SĐT 0901234567 hoặc email nguyen.van.a@company.vn' },
       { id: 'bank', title: '🏦 Tài khoản → Tokenize', mode: 'standard', category: 'tokenize', prompt: 'Chuyển tiền vào STK 1234567890123456 ngân hàng VCB chi nhánh Hà Nội.' },
       // ── Enterprise Use Cases ──
+      { id: 'coding', title: '👨‍💻 Lập trình (Orchestrate)', mode: 'standard', category: 'allow', prompt: 'Xin hàm tính Fibonacci bằng Rust.' },
+      { id: 'legal', title: '⚖️ Pháp lý (Orchestrate)', mode: 'standard', category: 'allow', prompt: 'Đánh giá rủi ro điều khoản bồi thường hợp đồng mua bán.' },
       { id: 'hr', title: '👤 Hồ sơ nhân viên (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Phân tích hồ sơ nhân viên: Nguyễn Văn A, CCCD 079090123456, SĐT 0901234567, email nguyenvana@company.vn. Đánh giá năng lực Q1/2026.' },
       { id: 'medical', title: '🏥 Hồ sơ bệnh án (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Tóm tắt bệnh án: Bệnh nhân Trần Thị B, CCCD 038090654321, SĐT 0987654321. Chẩn đoán: viêm phổi. Cần kê đơn thuốc phù hợp.' },
       { id: 'contract', title: '📝 Hợp đồng (Mixed)', mode: 'standard', category: 'tokenize', prompt: 'Soạn hợp đồng lao động cho ông Lê Văn C, CCCD 025190789012, STK 9876543210123456 tại Techcombank. Mức lương 25 triệu/tháng.' },
@@ -370,8 +372,13 @@
     }
 
     async function sendStandard(message) {
+      state.lastRoutedModel = null;
       const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, user_id: currentUser }) });
       const data = await res.json().catch(() => ({ reply: 'Error parsing response' }));
+      if (data.routed_model) {
+          modelText.textContent = data.routed_model;
+          state.lastRoutedModel = data.routed_model;
+      }
       addMsg({
         role: 'assistant', text: data.reply || 'No content.',
         blocked: !!data.blocked, requestId: data.request_id || '',
@@ -386,6 +393,12 @@
         const d = await res.json().catch(() => ({}));
         addMsg({ role: 'assistant', text: d.reply || d.error || 'Stream error', blocked: res.status === 403, securityLevel: res.status === 403 ? 'blocked' : 'safe', source: 'Stream' });
         return;
+      }
+      state.lastRoutedModel = null;
+      const routed = res.headers.get('x-routed-model');
+      if (routed) {
+          modelText.textContent = routed;
+          state.lastRoutedModel = routed;
       }
       const card = addMsg({ role: 'assistant', text: '', source: 'Streaming...' });
       const reader = res.body.getReader(), decoder = new TextDecoder();
@@ -419,7 +432,9 @@
         gatewayPill.textContent = s.gateway_ready ? 'Ready' : 'Offline';
         gatewayPill.className = `status-pill ${s.gateway_ready ? 'ok' : 'err'}`;
         policyText.textContent = [s.policy_name, s.policy_version].filter(Boolean).join(' ');
-        modelText.textContent = s.model || '-';
+        if (!state.lastRoutedModel) {
+            modelText.textContent = s.model || '-';
+        }
       } catch (e) {
         gatewayPill.textContent = 'Error';
         gatewayPill.className = 'status-pill err';

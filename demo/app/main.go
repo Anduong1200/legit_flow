@@ -53,9 +53,10 @@ type chatRequest struct {
 }
 
 type chatResponse struct {
-	Reply     string `json:"reply"`
-	RequestID string `json:"request_id"`
-	Blocked   bool   `json:"blocked"`
+	Reply       string `json:"reply"`
+	RequestID   string `json:"request_id"`
+	Blocked     bool   `json:"blocked"`
+	RoutedModel string `json:"routed_model,omitempty"`
 }
 
 type statusResponse struct {
@@ -279,6 +280,7 @@ func (a *demoApp) handleChat(w http.ResponseWriter, r *http.Request) {
 
 	body, _ := io.ReadAll(resp.Body)
 	requestID := resp.Header.Get("X-Request-ID")
+	routedModel := resp.Header.Get("X-Routed-Model")
 
 	if resp.StatusCode == http.StatusForbidden {
 		var blocked struct {
@@ -318,8 +320,9 @@ func (a *demoApp) handleChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, chatResponse{
-		Reply:     replyText,
-		RequestID: requestID,
+		Reply:       replyText,
+		RequestID:   requestID,
+		RoutedModel: routedModel,
 	})
 }
 
@@ -376,6 +379,9 @@ func (a *demoApp) handleChatStream(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	if requestID := resp.Header.Get("X-Request-ID"); requestID != "" {
 		w.Header().Set("X-Request-ID", requestID)
+	}
+	if routedModel := resp.Header.Get("X-Routed-Model"); routedModel != "" {
+		w.Header().Set("X-Routed-Model", routedModel)
 	}
 	w.WriteHeader(http.StatusOK)
 
